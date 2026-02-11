@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 
 interface CartDrawerProps {
@@ -6,7 +7,13 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+  const navigate = useNavigate()
   const { items, removeFromCart, updateQuantity, totalPrice } = useCart()
+
+  const handleProceedToCheckout = () => {
+    onClose()
+    navigate('/checkout')
+  }
 
   return (
     <>
@@ -111,6 +118,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
             <button
               type="button"
+              onClick={handleProceedToCheckout}
               className="w-full py-3 px-4 font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
             >
               Proceed to Checkout
