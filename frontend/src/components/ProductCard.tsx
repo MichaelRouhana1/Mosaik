@@ -12,6 +12,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart()
   const [imageError, setImageError] = useState(false)
   const imageSrc = product.imageUrl && !imageError ? product.imageUrl : PLACEHOLDER_IMAGE
+  const colorLabel = product.color ?? '—'
 
   return (
     <article className="group overflow-hidden">
@@ -25,18 +26,21 @@ export default function ProductCard({ product }: ProductCardProps) {
         <button
           type="button"
           onClick={() => addToCart(product)}
-          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         >
-          <span className="text-sm text-gray-900 underline underline-offset-2 decoration-1 hover:no-underline">
+          <span className="text-xs font-normal uppercase tracking-widest text-mosaik-black underline underline-offset-2 decoration-1 hover:no-underline">
             Add to Cart
           </span>
         </button>
       </div>
-      <div className="mt-2">
-        <h3 className="text-sm font-light text-gray-900 truncate">
+      <div className="mt-3">
+        <h3 className="text-sm font-light text-mosaik-black truncate">
           {product.name}
         </h3>
-        <p className="text-sm font-light text-gray-900 mt-0.5">
+        <p className="text-xs font-light text-mosaik-gray mt-0.5">
+          {colorLabel}
+        </p>
+        <p className="text-sm font-light text-mosaik-black mt-0.5">
           ${product.price.toFixed(2)}
         </p>
       </div>

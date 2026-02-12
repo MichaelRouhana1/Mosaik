@@ -13,7 +13,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts(String category) {
+        if (category != null && !category.isBlank()) {
+            return productRepository.findByCategoryIgnoreCaseOrderByNameAsc(category);
+        }
         return productRepository.findAllByOrderByNameAsc();
     }
 }

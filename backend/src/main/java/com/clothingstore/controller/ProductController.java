@@ -16,8 +16,8 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
+    public ResponseEntity<List<Product>> getAllProducts(@RequestParam(required = false) String cat) {
+        List<Product> products = productService.getAllProducts(cat);
         return ResponseEntity.ok(products);
     }
 }

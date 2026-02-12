@@ -2,28 +2,22 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import type { Product } from '../types/product'
 
+const PEXELS = (id: number, w = 800, h = 1000) =>
+  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}&h=${h}&fit=crop`
+
 const CATEGORIES = [
-  { label: 'Trousers', image: 'https://picsum.photos/seed/trousers/800/1000', href: '/shop?cat=trousers' },
-  { label: 'Shirts', image: 'https://picsum.photos/seed/shirts/800/1000', href: '/shop?cat=shirts' },
-  { label: 'T-Shirts', image: 'https://picsum.photos/seed/tshirts/800/1000', href: '/shop?cat=tshirts' },
-  { label: 'Knitwear', image: 'https://picsum.photos/seed/knitwear/800/1000', href: '/shop?cat=knitwear' },
-  { label: 'Jackets & Coats', image: 'https://picsum.photos/seed/jackets/800/1000', href: '/shop?cat=jackets' },
-  { label: 'Footwear', image: 'https://picsum.photos/seed/footwear/800/1000', href: '/shop?cat=footwear' },
+  { label: 'Trousers', image: '/images/trousers.png', href: '/shop?cat=trousers' },
+  { label: 'Shirts', image: '/images/shirts.png', href: '/shop?cat=shirts' },
+  { label: 'T-Shirts', image: '/images/tshirts.png', href: '/shop?cat=tshirts' },
+  { label: 'Hoodies', image: '/images/hoodies.png', href: '/shop?cat=hoodies' },
+  { label: 'Jackets & Coats', image: '/images/jackets.png', href: '/shop?cat=jackets' },
+  { label: 'Jeans', image: '/images/jeans.png', href: '/shop?cat=jeans' },
 ]
 
 const LOOKS = [
-  { label: 'Everyday', image: 'https://picsum.photos/seed/look1/600/800', href: '/shop' },
-  { label: 'Tailored Casual', image: 'https://picsum.photos/seed/look2/600/800', href: '/shop' },
-  { label: 'Minimal Street', image: 'https://picsum.photos/seed/look3/600/800', href: '/shop' },
-  { label: 'Refined Essentials', image: 'https://picsum.photos/seed/look4/600/800', href: '/shop' },
-]
-
-const MEDIA_STRIP = [
-  'https://picsum.photos/seed/m1/400/400',
-  'https://picsum.photos/seed/m2/400/400',
-  'https://picsum.photos/seed/m3/400/400',
-  'https://picsum.photos/seed/m4/400/400',
-  'https://picsum.photos/seed/m5/400/400',
+  { label: 'Everyday', image: '/images/everyday.png', href: '/shop' },
+  { label: 'Tailored Casual', image: PEXELS(4611700, 600, 800), href: '/shop' },
+  { label: 'Minimal Street', image: '/images/minimal-street.png', href: '/shop' },
 ]
 
 const API_URL = 'http://localhost:8080/api/products'
@@ -39,13 +33,14 @@ export default function Landing() {
   }, [])
 
   const discoverProducts = products.slice(0, 8)
+  const [videoMuted, setVideoMuted] = useState(true)
 
   return (
     <div className="pt-14">
       {/* Hero */}
       <section className="w-full h-[75vh] flex items-center justify-center relative overflow-hidden">
         <img
-          src="https://picsum.photos/seed/hero/1920/1080"
+          src={PEXELS(3748221, 1920, 1080)}
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -97,12 +92,34 @@ export default function Landing() {
               Designed to work together.
             </p>
           </div>
-          <div className="aspect-[4/5] overflow-hidden">
-            <img
-              src="https://picsum.photos/seed/editorial/800/1000"
-              alt=""
+          <div
+            className="aspect-[4/5] overflow-hidden cursor-pointer relative group/video"
+            onClick={() => setVideoMuted((m) => !m)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setVideoMuted((m) => !m)}
+            aria-label={videoMuted ? 'Unmute video' : 'Mute video'}
+          >
+            <video
+              src="/ad.mp4"
+              autoPlay
+              loop
+              muted={videoMuted}
+              playsInline
               className="w-full h-full object-cover"
             />
+            <div className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
+              {videoMuted ? (
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -151,7 +168,7 @@ export default function Landing() {
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.02]"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/placeholder/440/660'
+                      (e.target as HTMLImageElement).src = PEXELS(708440, 440, 660)
                     }}
                   />
                 </div>
@@ -170,17 +187,6 @@ export default function Landing() {
               </Link>
             ))
           )}
-        </div>
-      </section>
-
-      {/* Media Strip */}
-      <section className="py-16 overflow-hidden">
-        <div className="flex gap-2">
-          {MEDIA_STRIP.map((src, i) => (
-            <div key={i} className="flex-shrink-0 w-[300px] md:w-[400px] aspect-square overflow-hidden">
-              <img src={src} alt="" className="w-full h-full object-cover" />
-            </div>
-          ))}
         </div>
       </section>
 
