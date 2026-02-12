@@ -1,10 +1,13 @@
 INSERT INTO products (name, description, price, image_url, category)
-SELECT 'Classic White T-Shirt', 'Premium cotton t-shirt with a relaxed fit. Perfect for everyday wear.', 29.99, 'https://images.unsplash.com/photo-1521572163471-6300b297dfb5?w=400', 'T-Shirts'
+SELECT 'Classic White T-Shirt', 'Premium cotton t-shirt with a relaxed fit. Perfect for everyday wear.', 29.99, 'https://picsum.photos/seed/tshirt1/400/600', 'T-Shirts'
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Classic White T-Shirt');
 
 INSERT INTO products (name, description, price, image_url, category)
-SELECT 'Slim Fit Denim Jeans', 'Comfortable slim-fit denim jeans with a modern cut. Durable and stylish.', 79.99, 'https://images.unsplash.com/photo-1541099649105-f69ad76f0e38?w=400', 'Jeans'
+SELECT 'Slim Fit Denim Jeans', 'Comfortable slim-fit denim jeans with a modern cut. Durable and stylish.', 79.99, 'https://picsum.photos/seed/jeans1/400/600', 'Jeans'
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Slim Fit Denim Jeans');
+
+UPDATE products SET image_url = 'https://picsum.photos/seed/tshirt1/400/600' WHERE name = 'Classic White T-Shirt';
+UPDATE products SET image_url = 'https://picsum.photos/seed/jeans1/400/600' WHERE name = 'Slim Fit Denim Jeans';
 
 INSERT INTO products (name, description, price, image_url, category)
 SELECT 'Oversized Hoodie', 'Soft fleece hoodie with an oversized fit. Cozy for cool weather.', 59.99, 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400', 'Hoodies'

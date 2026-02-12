@@ -8,7 +8,6 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.1</version>
         <relativePath/>
-        <scope>import</scope>
     </parent>
 
     <groupId>com.clothingstore</groupId>

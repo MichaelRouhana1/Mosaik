@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import type { Product } from '../types/product'
+
+const PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='600' viewBox='0 0 400 600'%3E%3Crect fill='%23e5e5e5' width='400' height='600'/%3E%3Ctext fill='%23999999' font-family='sans-serif' font-size='18' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E"
 
 interface ProductCardProps {
   product: Product
@@ -7,37 +10,35 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart()
+  const [imageError, setImageError] = useState(false)
+  const imageSrc = product.imageUrl && !imageError ? product.imageUrl : PLACEHOLDER_IMAGE
+
   return (
-    <article className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100">
-      <div className="aspect-square overflow-hidden bg-gray-100">
+    <article className="group overflow-hidden">
+      <div className="relative aspect-[2/3] overflow-hidden">
         <img
-          src={product.imageUrl}
+          src={imageSrc}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
         />
+        <button
+          type="button"
+          onClick={() => addToCart(product)}
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <span className="text-sm text-gray-900 underline underline-offset-2 decoration-1 hover:no-underline">
+            Add to Cart
+          </span>
+        </button>
       </div>
-      <div className="p-5">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-          {product.category}
-        </span>
-        <h3 className="mt-1 font-semibold text-gray-900 text-lg line-clamp-2">
+      <div className="mt-2">
+        <h3 className="text-sm font-normal text-gray-900 truncate">
           {product.name}
         </h3>
-        <p className="mt-2 text-gray-600 text-sm line-clamp-2">
-          {product.description}
+        <p className="text-sm font-normal text-gray-900 mt-0.5">
+          ${product.price.toFixed(2)}
         </p>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-xl font-bold text-gray-900">
-            ${product.price.toFixed(2)}
-          </span>
-          <button
-            type="button"
-            onClick={() => addToCart(product)}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Add to Cart
-          </button>
-        </div>
       </div>
     </article>
   )

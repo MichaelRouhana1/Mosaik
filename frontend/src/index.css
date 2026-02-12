@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', Helvetica, sans-serif;
+  }
+  body {
+    background-color: #ffffff;
+  }
+  button {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+}
