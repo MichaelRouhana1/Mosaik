@@ -33,10 +33,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         </button>
       </div>
       <div className="mt-2">
-        <h3 className="text-sm font-normal text-gray-900 truncate">
+        <h3 className="text-sm font-light text-gray-900 truncate">
           {product.name}
         </h3>
-        <p className="text-sm font-normal text-gray-900 mt-0.5">
+        <p className="text-sm font-light text-gray-900 mt-0.5">
           ${product.price.toFixed(2)}
         </p>
       </div>

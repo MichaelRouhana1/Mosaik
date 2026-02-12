@@ -40,7 +40,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            className="p-2 rounded-none text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
             aria-label="Close cart"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <img
                     src={product.imageUrl}
                     alt={product.name}
-                    className="w-20 h-20 rounded-lg object-cover bg-gray-100 flex-shrink-0"
+                    className="w-20 h-20 rounded-none object-cover bg-gray-100 flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-gray-900 truncate">{product.name}</h3>
@@ -74,7 +74,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <button
                         type="button"
                         onClick={() => updateQuantity(product.id, quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 font-medium"
+                        className="w-8 h-8 flex items-center justify-center rounded-none border border-gray-200 hover:bg-gray-50 text-gray-600 font-medium"
                         aria-label="Decrease quantity"
                       >
                         −
@@ -83,7 +83,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <button
                         type="button"
                         onClick={() => updateQuantity(product.id, quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 font-medium"
+                        className="w-8 h-8 flex items-center justify-center rounded-none border border-gray-200 hover:bg-gray-50 text-gray-600 font-medium"
                         aria-label="Increase quantity"
                       >
                         +
@@ -119,7 +119,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             <button
               type="button"
               onClick={handleProceedToCheckout}
-              className="w-full py-3 px-4 font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              className="w-full py-3 px-4 font-medium text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors"
             >
               Proceed to Checkout
             </button>

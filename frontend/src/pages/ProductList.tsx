@@ -74,8 +74,8 @@ export default function ProductList({ searchQuery = '' }: ProductListProps) {
   }
 
   return (
-    <div className="w-full px-3 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="w-full px-0 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {filteredProducts.length === 0 ? (
           <p className="col-span-full text-center text-gray-600 py-12">
             No products match your search.

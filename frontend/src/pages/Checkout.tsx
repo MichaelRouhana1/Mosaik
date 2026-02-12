@@ -59,7 +59,7 @@ export default function Checkout() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="px-6 py-3 font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+            className="px-6 py-3 font-medium text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors"
           >
             Continue Shopping
           </button>
@@ -77,7 +77,7 @@ export default function Checkout() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="px-6 py-3 font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+            className="px-6 py-3 font-medium text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors"
           >
             Back to Products
           </button>
@@ -107,7 +107,7 @@ export default function Checkout() {
                   setGuestEmail(e.target.value)
                   setError(null)
                 }}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="w-full px-4 py-2.5 rounded-none border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 placeholder="you@example.com"
               />
               <p className="mt-1 text-sm text-gray-500">Leave blank to use guest@example.com</p>
@@ -142,7 +142,7 @@ export default function Checkout() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 font-medium text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Placing Order...' : 'Place Order'}
             </button>

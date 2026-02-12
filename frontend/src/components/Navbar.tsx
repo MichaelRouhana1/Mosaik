@@ -18,12 +18,12 @@ export default function Navbar({ searchQuery = '', onSearchChange, onCartClick }
   }, [isSearchExpanded])
 
   return (
-    <nav className="bg-white sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-black text-gray-900 tracking-tight uppercase">
+            <span className="text-2xl font-light text-gray-900 tracking-[0.3em] uppercase">
               MOSAIK
             </span>
           </Link>
