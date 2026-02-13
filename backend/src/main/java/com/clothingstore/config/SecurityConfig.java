@@ -57,6 +57,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // CSRF disabled globally (stateless JWT API). If you enable CSRF later, exclude:
+                // .requestMatchers("/api/payment/webhook").permitAll() and csrf().ignoringRequestMatchers("/api/payment/webhook")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

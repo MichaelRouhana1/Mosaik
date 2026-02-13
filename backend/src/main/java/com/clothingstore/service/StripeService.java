@@ -33,7 +33,12 @@ public class StripeService {
         Stripe.apiKey = stripeSecretKey;
     }
 
+    /**
+     * Creates a Stripe Checkout Session for the given order.
+     * The orderId is stored in session metadata for retrieval in the webhook.
+     */
     public String createCheckoutSession(Order order) throws StripeException {
+        Long orderId = order.getId();
         List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
 
         for (OrderItem item : order.getItems()) {
@@ -69,7 +74,7 @@ public class StripeService {
                 .setSuccessUrl("http://localhost:5173/checkout/success?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl("http://localhost:5173/checkout/cancel")
                 .addAllLineItem(lineItems)
-                .putMetadata("order_id", order.getId().toString())
+                .putMetadata("order_id", orderId.toString())
                 .build();
 
         com.stripe.model.checkout.Session session = com.stripe.model.checkout.Session.create(params);
