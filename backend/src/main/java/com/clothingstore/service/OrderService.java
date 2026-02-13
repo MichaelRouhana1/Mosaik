@@ -72,6 +72,8 @@ public class OrderService {
             orderItem.setUnitPrice(product.getPrice());
             orderItem.setSize(size);
             orderItem.setSku(sku);
+            orderItem.setImageUrl(product.getImageUrl());
+            orderItem.setColor(product.getColor());
             orderItem.setProductVariant(variant);
             order.getItems().add(orderItem);
         }

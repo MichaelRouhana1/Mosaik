@@ -1,8 +1,10 @@
 package com.clothingstore.service;
 
 import com.clothingstore.entity.Order;
+import com.clothingstore.entity.OrderItem;
 import com.clothingstore.entity.OrderStatus;
 import com.clothingstore.repository.OrderRepository;
+import com.clothingstore.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 public class AdminOrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
     public Page<Order> getAllOrders(Pageable pageable) {
         return orderRepository.findAllByOrderByCreatedAtDesc(pageable);
@@ -23,8 +26,26 @@ public class AdminOrderService {
 
     @Transactional(readOnly = true)
     public Order getById(Long id) {
-        return orderRepository.findById(id)
+        Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        enrichOrderItemsWithProductDetails(order);
+        return order;
+    }
+
+    private void enrichOrderItemsWithProductDetails(Order order) {
+        for (OrderItem item : order.getItems()) {
+            if ((item.getImageUrl() == null || item.getImageUrl().isBlank() || item.getColor() == null || item.getColor().isBlank())
+                    && item.getProductId() != null) {
+                productRepository.findById(item.getProductId()).ifPresent(product -> {
+                    if (item.getImageUrl() == null || item.getImageUrl().isBlank()) {
+                        item.setImageUrl(product.getImageUrl());
+                    }
+                    if (item.getColor() == null || item.getColor().isBlank()) {
+                        item.setColor(product.getColor());
+                    }
+                });
+            }
+        }
     }
 
     @Transactional

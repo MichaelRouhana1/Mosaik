@@ -35,6 +35,12 @@ public class OrderItem {
     @Column(length = 100)
     private String sku;
 
+    @Column(length = 500)
+    private String imageUrl;
+
+    @Column(length = 50)
+    private String color;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_variant_id")
     @JsonIgnore

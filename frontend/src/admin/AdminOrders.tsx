@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { adminFetch } from '../api/adminApi'
 import { useToast } from '../context/ToastContext'
 
-const ORDER_STATUSES = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const
+const ORDER_STATUSES = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const
 
 interface OrderItem {
   id: number
@@ -12,6 +12,9 @@ interface OrderItem {
   quantity: number
   unitPrice: number
   size?: string
+  sku?: string
+  imageUrl?: string
+  color?: string
 }
 
 interface Order {
@@ -116,10 +119,13 @@ export default function AdminOrders() {
             </div>
             <h2 className="text-sm font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-4">Items</h2>
             <div className="border border-mosaik-gray/20 dark:border-mosaik-dark-border overflow-x-auto">
-              <table className="w-full text-sm min-w-[400px]">
+              <table className="w-full text-sm min-w-[500px]">
                 <thead>
                   <tr className="border-b border-mosaik-gray/20 dark:border-mosaik-dark-border bg-mosaik-gray-soft dark:bg-mosaik-dark-card">
                     <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Product</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Color</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Size</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">SKU</th>
                     <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Qty</th>
                     <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Unit Price</th>
                     <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Total</th>
@@ -128,7 +134,23 @@ export default function AdminOrders() {
                 <tbody>
                   {orderDetail.items?.map((item) => (
                     <tr key={item.id} className="border-b border-mosaik-gray/10 dark:border-mosaik-dark-border last:border-0">
-                      <td className="py-3 px-4 text-mosaik-black dark:text-white">{item.productName}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          {item.imageUrl ? (
+                            <img
+                              src={item.imageUrl}
+                              alt=""
+                              className="w-10 h-12 object-cover bg-mosaik-gray-soft dark:bg-mosaik-dark-bg"
+                            />
+                          ) : (
+                            <div className="w-10 h-12 bg-mosaik-gray-soft dark:bg-mosaik-dark-bg" />
+                          )}
+                          <span className="text-mosaik-black dark:text-white">{item.productName}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-mosaik-gray dark:text-gray-400">{item.color || '—'}</td>
+                      <td className="py-3 px-4 text-mosaik-gray dark:text-gray-400">{item.size || '—'}</td>
+                      <td className="py-3 px-4 text-mosaik-gray dark:text-gray-400 font-mono text-xs">{item.sku || '—'}</td>
                       <td className="py-3 px-4 text-mosaik-black dark:text-white">{item.quantity}</td>
                       <td className="py-3 px-4 text-mosaik-black dark:text-white">${item.unitPrice.toFixed(2)}</td>
                       <td className="py-3 px-4 text-mosaik-black dark:text-white">${(item.quantity * item.unitPrice).toFixed(2)}</td>
