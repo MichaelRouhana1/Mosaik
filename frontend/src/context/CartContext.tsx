@@ -187,10 +187,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           .finally(() => setIsLoading(false))
       }
     } else if (!wasGuest && !isNowLoggedIn) {
-      setItems((current) => {
-        saveGuestCart(current)
-        return current
-      })
+      setItems([])
+      saveGuestCart([])
     }
   }, [isAuthenticated, authFetch])
 

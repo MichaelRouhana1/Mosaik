@@ -43,7 +43,9 @@ public class CartService {
             if (req.getQuantity() < 1) continue;
             String key = (req.getSku() != null && !req.getSku().isBlank())
                     ? req.getSku()
-                    : req.getProductId() + ":" + (req.getSize() != null ? req.getSize() : "");
+                    : (req.getSize() != null && !req.getSize().isBlank()
+                            ? req.getProductId() + "-" + req.getSize()
+                            : String.valueOf(req.getProductId()));
             CartItemRequest existing = consolidated.get(key);
             if (existing != null) {
                 existing.setQuantity(existing.getQuantity() + req.getQuantity());
@@ -63,7 +65,9 @@ public class CartService {
             item.setSize(req.getSize());
             String sku = (req.getSku() != null && !req.getSku().isBlank())
                     ? req.getSku()
-                    : req.getProductId() + "-" + (req.getSize() != null ? req.getSize() : "");
+                    : (req.getSize() != null && !req.getSize().isBlank()
+                            ? req.getProductId() + "-" + req.getSize()
+                            : String.valueOf(req.getProductId()));
             item.setSku(sku);
             cart.getItems().add(item);
         }
@@ -88,7 +92,9 @@ public class CartService {
         Product p = item.getProduct();
         String sku = item.getSku() != null && !item.getSku().isBlank()
                 ? item.getSku()
-                : p.getId() + "-" + (item.getSize() != null ? item.getSize() : "");
+                : (item.getSize() != null && !item.getSize().isBlank()
+                        ? p.getId() + "-" + item.getSize()
+                        : String.valueOf(p.getId()));
         return Map.of(
                 "productId", p.getId(),
                 "quantity", item.getQuantity(),
