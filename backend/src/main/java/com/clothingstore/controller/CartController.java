@@ -2,6 +2,7 @@ package com.clothingstore.controller;
 
 import com.clothingstore.dto.UpdateCartRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import com.clothingstore.service.CartService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth/cart")
 @RequiredArgsConstructor
+@Slf4j
 public class CartController {
 
     private final CartService cartService;
@@ -39,6 +41,7 @@ public class CartController {
             List<Map<String, Object>> items = cartService.updateCart(email, request);
             return ResponseEntity.ok(Map.of("items", items));
         } catch (RuntimeException e) {
+            log.warn("Cart update failed for {}: {}", email, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
     }

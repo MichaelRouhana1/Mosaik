@@ -6,6 +6,7 @@ import com.clothingstore.entity.Cart;
 import com.clothingstore.entity.CartItem;
 import com.clothingstore.entity.Customer;
 import com.clothingstore.entity.Product;
+import com.clothingstore.repository.CartItemRepository;
 import com.clothingstore.repository.CartRepository;
 import com.clothingstore.repository.CustomerRepository;
 import com.clothingstore.repository.ProductRepository;
@@ -23,23 +24,32 @@ import java.util.stream.Collectors;
 public class CartService {
 
     private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
 
     public List<Map<String, Object>> getCart(String email) {
         Cart cart = getOrCreateCart(email);
-        return cart.getItems().stream()
-                .map(this::toResponseItem)
-                .collect(Collectors.toList());
+        Map<String, Map<String, Object>> bySku = new java.util.LinkedHashMap<>();
+        for (CartItem item : cart.getItems()) {
+            Map<String, Object> resp = toResponseItem(item);
+            String sku = (String) resp.get("sku");
+            if (!bySku.containsKey(sku)) {
+                bySku.put(sku, resp);
+            }
+        }
+        return new ArrayList<>(bySku.values());
     }
 
     @Transactional
     public List<Map<String, Object>> updateCart(String email, UpdateCartRequest request) {
         Cart cart = getOrCreateCart(email);
+        cartItemRepository.deleteByCartId(cart.getId());
         cart.getItems().clear();
 
+        java.util.List<CartItemRequest> requestItems = request.getItems() != null ? request.getItems() : java.util.Collections.emptyList();
         java.util.Map<String, CartItemRequest> consolidated = new java.util.LinkedHashMap<>();
-        for (CartItemRequest req : request.getItems()) {
+        for (CartItemRequest req : requestItems) {
             if (req.getQuantity() < 1) continue;
             String key = (req.getSku() != null && !req.getSku().isBlank())
                     ? req.getSku()

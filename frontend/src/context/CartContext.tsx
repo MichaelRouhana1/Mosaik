@@ -3,6 +3,8 @@ import type { Product } from '../types/product'
 import { useAuth } from './AuthContext'
 
 const GUEST_CART_KEY = 'mosaik_guest_cart'
+const CART_DEBUG = true
+const log = (...args: unknown[]) => CART_DEBUG && console.log('[Cart]', ...args)
 
 export function getCartItemSku(productId: number, size?: string): string {
   return size ? `${productId}-${size}` : `${productId}`
@@ -43,8 +45,11 @@ function productFromApi(p: { id: number; name: string; description?: string; pri
 }
 
 function ensureSku(item: { product: Product; quantity: number; size?: string; sku?: string }): string {
-  if (item.sku && item.sku.trim()) return item.sku
-  return getCartItemSku(item.product.id, item.size)
+  const resolved = item.sku && item.sku.trim() ? item.sku : getCartItemSku(item.product.id, item.size)
+  if (CART_DEBUG && (!item.sku || !item.sku.trim())) {
+    log('ensureSku fallback: rawSku=', JSON.stringify(item.sku), 'size=', item.size, 'productId=', item.product?.id, '->', resolved)
+  }
+  return resolved
 }
 
 function toCartItem(raw: { product: Product; quantity: number; size?: string; sku?: string }): CartItem {
@@ -59,18 +64,25 @@ function toCartItem(raw: { product: Product; quantity: number; size?: string; sk
 function loadGuestCart(): CartItem[] {
   try {
     const raw = localStorage.getItem(GUEST_CART_KEY)
-    if (!raw) return []
+    if (!raw) {
+      log('loadGuestCart: empty')
+      return []
+    }
     const parsed = JSON.parse(raw) as { product: Product; quantity: number; size?: string; sku?: string }[]
-    return parsed
+    const items = parsed
       .filter((i) => i.product && i.quantity > 0)
       .map(toCartItem)
-  } catch {
+    log('loadGuestCart:', items.length, 'items', items.map((i) => ({ sku: i.sku, rawSku: parsed.find((p) => p.product?.id === i.product.id)?.sku, size: i.size })))
+    return items
+  } catch (e) {
+    log('loadGuestCart error:', e)
     return []
   }
 }
 
 function saveGuestCart(items: CartItem[]) {
   try {
+    log('saveGuestCart:', items.length, 'items', items.map((i) => i.sku))
     localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items))
   } catch {
     // ignore
@@ -87,18 +99,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async (newItems: CartItem[]) => {
       if (!isAuthenticated || !authFetch) return
       try {
+        const payload = newItems.map((i) => ({ productId: i.product.id, quantity: i.quantity, size: i.size || null, sku: i.sku }))
+        log('syncToBackend:', payload)
         await authFetch('/cart', {
           method: 'PUT',
-          body: JSON.stringify({
-            items: newItems.map((i) => ({
-              productId: i.product.id,
-              quantity: i.quantity,
-              size: i.size || null,
-              sku: i.sku,
-            })),
-          }),
+          body: JSON.stringify({ items: payload }),
         })
-      } catch {
+      } catch (e) {
+        log('syncToBackend error:', e)
         // ignore sync errors
       }
     },
@@ -107,36 +115,44 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const loadCart = useCallback(async () => {
     setIsLoading(true)
+    log('loadCart: isAuthenticated=', isAuthenticated)
     if (isAuthenticated && authFetch) {
       try {
         const res = await authFetch('/cart')
         if (res.ok) {
           const data = await res.json()
           const apiItems = (data.items ?? []) as { productId: number; quantity: number; size?: string; sku?: string; product: Record<string, unknown> }[]
-          setItems(
-            apiItems.map((i) =>
-              toCartItem({
-                product: productFromApi(i.product as Parameters<typeof productFromApi>[0]),
-                quantity: i.quantity,
-                size: i.size || undefined,
-                sku: i.sku,
-              })
-            )
+          log('loadCart (backend):', apiItems.length, 'items', apiItems.map((i) => ({ productId: i.productId, size: i.size, sku: i.sku })))
+          const cartItems = apiItems.map((i) =>
+            toCartItem({
+              product: productFromApi(i.product as Parameters<typeof productFromApi>[0]),
+              quantity: i.quantity,
+              size: i.size || undefined,
+              sku: i.sku,
+            })
           )
+          log('loadCart (parsed):', cartItems.map((i) => i.sku))
+          setItems(cartItems)
         } else {
+          log('loadCart: backend not ok', res.status)
           setItems([])
         }
-      } catch {
+      } catch (e) {
+        log('loadCart error:', e)
         setItems([])
       }
     } else {
-      setItems(loadGuestCart())
+      const guest = loadGuestCart()
+      log('loadCart (guest):', guest.length)
+      setItems(guest)
     }
     setIsLoading(false)
   }, [isAuthenticated, authFetch])
 
   useEffect(() => {
-    if (isAuthenticated && loadGuestCart().length > 0) {
+    const guestCount = loadGuestCart().length
+    if (isAuthenticated && guestCount > 0) {
+      log('loadCart SKIP: authenticated + guest has', guestCount, 'items (merge effect will handle)')
       return
     }
     loadCart()
@@ -145,10 +161,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const wasGuest = !prevAuthRef.current
     const isNowLoggedIn = isAuthenticated
+    log('auth effect: wasGuest=', wasGuest, 'isNowLoggedIn=', isNowLoggedIn)
     prevAuthRef.current = isAuthenticated
 
     if (wasGuest && isNowLoggedIn) {
       const guestItems = loadGuestCart()
+      log('login merge: guestItems=', guestItems.length, guestItems.map((i) => i.sku))
       if (guestItems.length > 0 && authFetch) {
         authFetch('/cart')
           .then((res) => (res.ok ? res.json() : { items: [] }))
@@ -162,11 +180,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 sku: i.sku,
               })
             )
+            log('login merge: backendCart SKUs=', backendCart.map((i) => i.sku), 'raw api skus=', apiItems.map((i) => i.sku))
             const merged = [...backendCart]
             const seenSkus = new Set(merged.map((i) => i.sku))
             for (const g of guestItems) {
               const sku = g.sku
               const existing = merged.find((i) => i.sku === sku)
+              log('login merge: guest sku=', sku, 'existing=', !!existing, 'seenSkus.has=', seenSkus.has(sku))
               if (existing) {
                 existing.quantity = Math.max(existing.quantity, g.quantity)
               } else if (!seenSkus.has(sku)) {
@@ -174,6 +194,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 merged.push(g)
               }
             }
+            log('login merge: merged SKUs=', merged.map((i) => i.sku), 'count=', merged.length)
             setItems(merged)
             return authFetch('/cart', {
               method: 'PUT',
@@ -187,6 +208,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           .finally(() => setIsLoading(false))
       }
     } else if (!wasGuest && !isNowLoggedIn) {
+      log('logout: clearing cart and guest storage')
       setItems([])
       saveGuestCart([])
     }
@@ -206,6 +228,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback(
     (product: Product, size?: string) => {
       const sku = getCartItemSku(product.id, size)
+      log('addToCart: productId=', product.id, 'size=', size, 'sku=', sku)
       setItems((prev) => {
         const existing = prev.find((i) => i.sku === sku)
         let next: CartItem[]

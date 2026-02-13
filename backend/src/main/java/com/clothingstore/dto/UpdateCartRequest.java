@@ -9,6 +9,5 @@ import java.util.List;
 @Data
 public class UpdateCartRequest {
 
-    @NotNull
-    private List<@Valid CartItemRequest> items;
+    private List<@Valid CartItemRequest> items = new java.util.ArrayList<>();
 }
