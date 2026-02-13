@@ -34,11 +34,6 @@ public class AuthController {
         if (auth == null || !auth.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String principal = auth.getName();
-        if (!principal.startsWith("admin:")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String email = principal.substring("admin:".length());
-        return ResponseEntity.ok(Map.of("email", email));
+        return ResponseEntity.ok(Map.of("email", auth.getName()));
     }
 }

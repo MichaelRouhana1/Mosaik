@@ -16,6 +16,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
+    List<Order> findByGuestEmailIgnoreCaseOrderByCreatedAtDesc(String email);
+
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT COALESCE(SUM(o.totalPrice), 0) FROM Order o WHERE o.createdAt BETWEEN :start AND :end")

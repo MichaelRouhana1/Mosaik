@@ -3,6 +3,7 @@ package com.clothingstore.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 public class CreateOrderRequest {
 
     @Email(message = "Invalid email format")
+    @Size(max = 255)
     private String guestEmail;
 
     @NotEmpty(message = "Order must contain at least one item")

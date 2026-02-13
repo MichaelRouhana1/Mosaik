@@ -1,5 +1,6 @@
 package com.clothingstore.controller;
 
+import com.clothingstore.util.InputSanitizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,10 +33,9 @@ public class AdminUploadController {
             return ResponseEntity.badRequest().build();
         }
 
-        String ext = "";
-        int dot = originalFilename.lastIndexOf('.');
-        if (dot > 0) {
-            ext = originalFilename.substring(dot);
+        String ext = InputSanitizer.sanitizeFileExtension(originalFilename);
+        if (ext == null) {
+            return ResponseEntity.badRequest().build();
         }
 
         String filename = UUID.randomUUID().toString().replace("-", "") + ext;

@@ -4,6 +4,7 @@ import com.clothingstore.dto.CreateProductRequest;
 import com.clothingstore.dto.UpdateProductRequest;
 import com.clothingstore.entity.Product;
 import com.clothingstore.repository.ProductRepository;
+import com.clothingstore.util.InputSanitizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,20 +15,25 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminProductService {
 
+    private static final int SEARCH_MAX_LENGTH = 100;
+    private static final int CATEGORY_MAX_LENGTH = 100;
+
     private final ProductRepository productRepository;
 
     public Page<Product> getAllProducts(String category, String search, Pageable pageable) {
-        boolean hasSearch = search != null && !search.isBlank();
-        boolean hasCategory = category != null && !category.isBlank();
+        String sanitizedSearch = InputSanitizer.sanitizeSearch(search, SEARCH_MAX_LENGTH);
+        String sanitizedCategory = InputSanitizer.sanitizeSearch(category, CATEGORY_MAX_LENGTH);
+        boolean hasSearch = sanitizedSearch != null && !sanitizedSearch.isBlank();
+        boolean hasCategory = sanitizedCategory != null && !sanitizedCategory.isBlank();
 
         if (hasCategory && hasSearch) {
-            return productRepository.findByCategoryIgnoreCaseAndNameContainingIgnoreCaseOrderByNameAsc(category, search.trim(), pageable);
+            return productRepository.findByCategoryIgnoreCaseAndNameContainingIgnoreCaseOrderByNameAsc(sanitizedCategory, sanitizedSearch, pageable);
         }
         if (hasCategory) {
-            return productRepository.findByCategoryIgnoreCaseOrderByNameAsc(category, pageable);
+            return productRepository.findByCategoryIgnoreCaseOrderByNameAsc(sanitizedCategory, pageable);
         }
         if (hasSearch) {
-            return productRepository.findByNameContainingIgnoreCaseOrderByNameAsc(search.trim(), pageable);
+            return productRepository.findByNameContainingIgnoreCaseOrderByNameAsc(sanitizedSearch, pageable);
         }
         return productRepository.findAllByOrderByNameAsc(pageable);
     }
@@ -40,39 +46,61 @@ public class AdminProductService {
     @Transactional
     public Product create(CreateProductRequest request) {
         Product product = new Product();
-        product.setName(request.getName().trim());
-        product.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
+        String name = InputSanitizer.sanitizeText(request.getName(), 255);
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name is required and must not contain only invalid characters");
+        }
+        product.setName(name);
+        product.setDescription(InputSanitizer.sanitizeText(request.getDescription(), 1000));
         product.setPrice(request.getPrice());
-        product.setImageUrl(request.getImageUrl() != null ? request.getImageUrl().trim() : null);
-        product.setAdditionalImageUrls(request.getAdditionalImageUrls() != null ? request.getAdditionalImageUrls().trim() : null);
-        product.setCategory(request.getCategory().trim());
-        product.setColor(request.getColor() != null ? request.getColor().trim() : null);
+        product.setImageUrl(InputSanitizer.sanitizeUrl(request.getImageUrl(), 500));
+        product.setAdditionalImageUrls(sanitizeAdditionalImageUrls(request.getAdditionalImageUrls()));
+        String category = InputSanitizer.sanitizeText(request.getCategory(), 100);
+        if (category == null || category.isBlank()) {
+            throw new IllegalArgumentException("Category is required and must not contain only invalid characters");
+        }
+        product.setCategory(category);
+        product.setColor(InputSanitizer.sanitizeText(request.getColor(), 50));
         return productRepository.save(product);
+    }
+
+    private String sanitizeAdditionalImageUrls(String input) {
+        if (input == null || input.isBlank()) return null;
+        String[] urls = input.split(",");
+        StringBuilder sb = new StringBuilder();
+        for (String url : urls) {
+            String sanitized = InputSanitizer.sanitizeUrl(url.trim(), 500);
+            if (sanitized != null) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(sanitized);
+            }
+        }
+        return sb.length() > 0 ? sb.toString() : null;
     }
 
     @Transactional
     public Product update(Long id, UpdateProductRequest request) {
         Product product = getById(id);
         if (request.getName() != null && !request.getName().isBlank()) {
-            product.setName(request.getName().trim());
+            product.setName(InputSanitizer.sanitizeText(request.getName(), 255));
         }
         if (request.getDescription() != null) {
-            product.setDescription(request.getDescription().trim());
+            product.setDescription(InputSanitizer.sanitizeText(request.getDescription(), 1000));
         }
         if (request.getPrice() != null) {
             product.setPrice(request.getPrice());
         }
         if (request.getImageUrl() != null) {
-            product.setImageUrl(request.getImageUrl().trim());
+            product.setImageUrl(InputSanitizer.sanitizeUrl(request.getImageUrl(), 500));
         }
         if (request.getAdditionalImageUrls() != null) {
-            product.setAdditionalImageUrls(request.getAdditionalImageUrls().trim());
+            product.setAdditionalImageUrls(sanitizeAdditionalImageUrls(request.getAdditionalImageUrls()));
         }
         if (request.getCategory() != null && !request.getCategory().isBlank()) {
-            product.setCategory(request.getCategory().trim());
+            product.setCategory(InputSanitizer.sanitizeText(request.getCategory(), 100));
         }
         if (request.getColor() != null) {
-            product.setColor(request.getColor().trim());
+            product.setColor(InputSanitizer.sanitizeText(request.getColor(), 50));
         }
         return productRepository.save(product);
     }

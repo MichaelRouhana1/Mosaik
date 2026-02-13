@@ -6,6 +6,7 @@ import com.clothingstore.entity.OrderItem;
 import com.clothingstore.entity.Product;
 import com.clothingstore.repository.OrderRepository;
 import com.clothingstore.repository.ProductRepository;
+import com.clothingstore.util.InputSanitizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+
+    private static final int EMAIL_MAX_LENGTH = 255;
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
@@ -32,8 +35,11 @@ public class OrderService {
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
         String guestEmail = (request.getGuestEmail() != null && !request.getGuestEmail().isBlank())
-                ? request.getGuestEmail()
+                ? InputSanitizer.sanitizeText(request.getGuestEmail().trim(), EMAIL_MAX_LENGTH)
                 : "guest@example.com";
+        if (guestEmail == null || guestEmail.isBlank()) {
+            guestEmail = "guest@example.com";
+        }
 
         Order order = new Order();
         order.setGuestEmail(guestEmail);

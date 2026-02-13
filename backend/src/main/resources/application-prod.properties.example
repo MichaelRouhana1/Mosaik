@@ -1,0 +1,13 @@
+# Production configuration example
+# Copy to application-prod.properties and set values for your deployment
+# Activate with: spring.profiles.active=prod
+
+# CORS: Add your production frontend domain(s), comma-separated
+app.cors.allowed-origins=https://yourdomain.com,https://www.yourdomain.com
+
+# Base URL for image uploads
+app.base-url=https://api.yourdomain.com
+
+# Rate limiting (brute-force protection for login)
+# app.rate-limit.login.max-attempts=5
+# app.rate-limit.login.window-minutes=15

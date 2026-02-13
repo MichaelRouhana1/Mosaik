@@ -1,13 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
 const API_URL = 'http://localhost:8080/api/orders'
 
 export default function Checkout() {
   const navigate = useNavigate()
   const { items, totalPrice, clearCart } = useCart()
+  const { profile, isAuthenticated } = useAuth()
   const [guestEmail, setGuestEmail] = useState('')
+
+  useEffect(() => {
+    if (isAuthenticated && profile?.email) {
+      setGuestEmail(profile.email)
+    }
+  }, [isAuthenticated, profile?.email])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -93,10 +101,13 @@ export default function Checkout() {
       <form onSubmit={handleSubmit} className="lg:grid lg:grid-cols-2 lg:gap-12">
         <div>
           <div className="bg-white dark:bg-mosaik-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-mosaik-dark-border p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Guest Information</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Information</h2>
+            {isAuthenticated && (
+              <p className="text-sm text-mosaik-gray dark:text-gray-400 mb-2">Signed in — orders will appear in your account</p>
+            )}
             <div>
               <label htmlFor="guestEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email (optional)
+                Email {isAuthenticated ? '' : '(optional)'}
               </label>
               <input
                 id="guestEmail"
@@ -110,7 +121,9 @@ export default function Checkout() {
                 className="w-full px-4 py-2.5 rounded-none border border-gray-200 dark:border-mosaik-dark-border bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent"
                 placeholder="you@example.com"
               />
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Leave blank to use guest@example.com</p>
+              {!isAuthenticated && (
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Leave blank to use guest@example.com</p>
+              )}
             </div>
           </div>
         </div>

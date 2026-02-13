@@ -25,10 +25,10 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   return (
-    <CartProvider>
-      <ThemeProvider>
+    <ThemeProvider>
       <AdminAuthProvider>
         <AuthProvider>
+          <CartProvider>
         <ToastProvider>
           <div className="min-h-screen bg-white dark:bg-mosaik-dark-bg transition-colors">
           <Routes>
@@ -92,10 +92,10 @@ function App() {
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
           </div>
         </ToastProvider>
+          </CartProvider>
         </AuthProvider>
       </AdminAuthProvider>
-      </ThemeProvider>
-    </CartProvider>
+    </ThemeProvider>
   )
 }
 

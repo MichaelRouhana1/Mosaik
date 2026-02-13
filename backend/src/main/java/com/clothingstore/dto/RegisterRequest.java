@@ -16,5 +16,13 @@ public class RegisterRequest {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
+    @NotBlank(message = "Please confirm your password")
+    private String confirmPassword;
+
     private String name;
+
+    @jakarta.validation.constraints.AssertTrue(message = "Passwords do not match")
+    public boolean isPasswordMatch() {
+        return password == null || confirmPassword == null || password.equals(confirmPassword);
+    }
 }
