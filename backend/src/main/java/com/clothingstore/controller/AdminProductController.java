@@ -1,5 +1,8 @@
 package com.clothingstore.controller;
 
+import com.clothingstore.dto.BulkDeleteRequest;
+import com.clothingstore.dto.BulkDiscountRequest;
+import com.clothingstore.dto.BulkVisibilityRequest;
 import com.clothingstore.dto.CreateProductRequest;
 import com.clothingstore.dto.UpdateProductRequest;
 import com.clothingstore.entity.Product;
@@ -57,6 +60,16 @@ public class AdminProductController {
         }
     }
 
+    @DeleteMapping("/bulk")
+    public ResponseEntity<Void> bulkDelete(@Valid @RequestBody BulkDeleteRequest request) {
+        try {
+            adminProductService.bulkDelete(request.getProductIds());
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
@@ -64,6 +77,26 @@ public class AdminProductController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/bulk-visibility")
+    public ResponseEntity<Void> bulkVisibility(@Valid @RequestBody BulkVisibilityRequest request) {
+        try {
+            adminProductService.bulkVisibility(request.getProductIds(), request.getVisible());
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/bulk-discount")
+    public ResponseEntity<Void> bulkDiscount(@Valid @RequestBody BulkDiscountRequest request) {
+        try {
+            adminProductService.bulkDiscount(request.getProductIds(), request.getDiscountPercentage());
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

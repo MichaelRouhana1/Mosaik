@@ -31,5 +31,7 @@ public class UpdateProductRequest {
     @Size(max = 50)
     private String color;
 
+    private Boolean visible;
+
     private List<@Valid VariantRequest> variants;
 }

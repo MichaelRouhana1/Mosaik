@@ -15,5 +15,6 @@ export interface Product {
   category: string
   color?: string
   sizes?: string
+  visible?: boolean
   variants?: ProductVariant[]
 }

@@ -93,6 +93,11 @@ export default function AdminProducts() {
   const [deleting, setDeleting] = useState<number | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null)
   const [sort, setSort] = useState<{ by: 'product' | 'stock' | 'price'; dir: 'asc' | 'desc' } | null>(null)
+  const [selectedProductIds, setSelectedProductIds] = useState<number[]>([])
+  const [discountModal, setDiscountModal] = useState(false)
+  const [discountInput, setDiscountInput] = useState('')
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [bulkActionLoading, setBulkActionLoading] = useState(false)
   const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL']
 
   const handleSort = (col: 'product' | 'stock' | 'price') => {
@@ -122,6 +127,24 @@ export default function AdminProducts() {
       return sortDir === 'asc' ? cmp : -cmp
     })
   })()
+
+  const allSelected = sortedProducts.length > 0 && selectedProductIds.length === sortedProducts.length
+  const someSelected = selectedProductIds.length > 0
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedProductIds([])
+    } else {
+      setSelectedProductIds(sortedProducts.map((p) => p.id))
+    }
+  }
+
+  const toggleSelect = (id: number) => {
+    setSelectedProductIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
+
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -129,6 +152,7 @@ export default function AdminProducts() {
     imageUrls: ['', '', ''] as [string, string, string],
     category: '',
     color: '',
+    visible: true,
     variants: STANDARD_SIZES.map((size) => ({ size, stock: 0 })),
   })
 
@@ -166,6 +190,68 @@ export default function AdminProducts() {
     }
   }
 
+  const handleBulkVisibility = async (visible: boolean) => {
+    if (!someSelected) return
+    setBulkActionLoading(true)
+    try {
+      await adminFetch('/products/bulk-visibility', {
+        method: 'PATCH',
+        body: JSON.stringify({ productIds: selectedProductIds, visible }),
+      })
+      setSelectedProductIds([])
+      toast.success(visible ? 'Products shown' : 'Products hidden')
+      load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Update failed')
+    } finally {
+      setBulkActionLoading(false)
+    }
+  }
+
+  const handleBulkDiscount = async () => {
+    const pct = parseFloat(discountInput)
+    if (isNaN(pct) || pct < 0 || pct > 100) {
+      toast.error('Enter a valid percentage (0–100)')
+      return
+    }
+    if (!someSelected) return
+    setBulkActionLoading(true)
+    try {
+      await adminFetch('/products/bulk-discount', {
+        method: 'PATCH',
+        body: JSON.stringify({ productIds: selectedProductIds, discountPercentage: pct }),
+      })
+      setSelectedProductIds([])
+      setDiscountModal(false)
+      setDiscountInput('')
+      toast.success(`Discount applied`)
+      load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Update failed')
+    } finally {
+      setBulkActionLoading(false)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (!someSelected) return
+    setBulkActionLoading(true)
+    try {
+      await adminFetch('/products/bulk', {
+        method: 'DELETE',
+        body: JSON.stringify({ productIds: selectedProductIds }),
+      })
+      setSelectedProductIds([])
+      setBulkDeleteConfirm(false)
+      toast.success('Products deleted')
+      load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Delete failed')
+    } finally {
+      setBulkActionLoading(false)
+    }
+  }
+
   const openEdit = (p: Product) => {
     setEditing(p)
     const additional = p.additionalImageUrls
@@ -184,6 +270,7 @@ export default function AdminProducts() {
       imageUrls,
       category: p.category,
       color: p.color || '',
+      visible: p.visible !== false,
       variants: STANDARD_SIZES.map((size) => ({ size, stock: variantMap.get(size) ?? 0 })),
     })
   }
@@ -197,6 +284,7 @@ export default function AdminProducts() {
       imageUrls: ['', '', ''],
       category: '',
       color: '',
+      visible: true,
       variants: STANDARD_SIZES.map((size) => ({ size, stock: 0 })),
     })
   }
@@ -219,6 +307,7 @@ export default function AdminProducts() {
           additionalImageUrls,
           category: form.category || null,
           color: form.color || null,
+          visible: form.visible,
           variants: form.variants.map((v) => ({ size: v.size, stock: v.stock })),
         }),
       })
@@ -253,6 +342,7 @@ export default function AdminProducts() {
           additionalImageUrls,
           category: form.category,
           color: form.color || null,
+          visible: form.visible,
           variants: form.variants.map((v) => ({ size: v.size, stock: v.stock })),
         }),
       })
@@ -326,10 +416,64 @@ export default function AdminProducts() {
         </div>
       ) : (
         <>
+          {someSelected && (
+            <div className="mb-4 flex flex-wrap items-center gap-3 py-3 px-4 bg-mosaik-gray-soft dark:bg-mosaik-dark-card border border-mosaik-gray/20 dark:border-mosaik-dark-border">
+              <span className="text-sm text-mosaik-black dark:text-white">
+                {selectedProductIds.length} selected
+              </span>
+              <button
+                type="button"
+                onClick={() => handleBulkVisibility(false)}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase border border-mosaik-gray/50 dark:border-mosaik-dark-border text-mosaik-black dark:text-white hover:bg-mosaik-gray-soft dark:hover:bg-mosaik-dark-bg disabled:opacity-50"
+              >
+                Hide Selected
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkVisibility(true)}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase border border-mosaik-gray/50 dark:border-mosaik-dark-border text-mosaik-black dark:text-white hover:bg-mosaik-gray-soft dark:hover:bg-mosaik-dark-bg disabled:opacity-50"
+              >
+                Show Selected
+              </button>
+              <button
+                type="button"
+                onClick={() => setDiscountModal(true)}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase border border-mosaik-gray/50 dark:border-mosaik-dark-border text-mosaik-black dark:text-white hover:bg-mosaik-gray-soft dark:hover:bg-mosaik-dark-bg disabled:opacity-50"
+              >
+                Apply Discount %
+              </button>
+              <button
+                type="button"
+                onClick={() => setBulkDeleteConfirm(true)}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase border border-red-500/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
+              >
+                Delete Selected
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedProductIds([])}
+                className="rounded-none px-4 py-2 text-xs uppercase text-mosaik-gray dark:text-gray-400 hover:text-mosaik-black dark:hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+          )}
           <div className="border border-mosaik-gray/20 dark:border-mosaik-dark-border overflow-x-auto">
             <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b border-mosaik-gray/20 dark:border-mosaik-dark-border bg-mosaik-gray-soft dark:bg-mosaik-dark-card">
+                  <th className="text-left py-3 px-4 w-10">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="rounded border-mosaik-gray/50 dark:border-mosaik-dark-border"
+                    />
+                  </th>
                   <th className="text-left py-3 px-4">
                     <button
                       type="button"
@@ -362,6 +506,7 @@ export default function AdminProducts() {
                     </button>
                   </th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Color</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Status</th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Actions</th>
                 </tr>
               </thead>
@@ -370,6 +515,14 @@ export default function AdminProducts() {
                   const totalStock = (p.variants ?? []).reduce((sum, v) => sum + v.stock, 0)
                   return (
                   <tr key={p.id} className="border-b border-mosaik-gray/10 dark:border-mosaik-dark-border last:border-0">
+                    <td className="py-3 px-4 w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedProductIds.includes(p.id)}
+                        onChange={() => toggleSelect(p.id)}
+                        className="rounded border-mosaik-gray/50 dark:border-mosaik-dark-border"
+                      />
+                    </td>
                     <td className="py-3 px-4 flex items-center gap-3">
                       {p.imageUrl ? (
                         <img
@@ -394,6 +547,13 @@ export default function AdminProducts() {
                     </td>
                     <td className="py-3 px-4 text-mosaik-black dark:text-white">${p.price.toFixed(2)}</td>
                     <td className="py-3 px-4 text-mosaik-gray dark:text-gray-400">{p.color || '—'}</td>
+                    <td className="py-3 px-4">
+                      {p.visible === false ? (
+                        <span className="text-xs text-amber-600 dark:text-amber-400">Hidden</span>
+                      ) : (
+                        <span className="text-xs text-mosaik-gray dark:text-gray-400">Visible</span>
+                      )}
+                    </td>
                     <td className="py-3 px-4">
                       <button
                         type="button"
@@ -525,6 +685,74 @@ export default function AdminProducts() {
           </div>
         </div>
       )}
+
+      {discountModal && (
+        <div className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-mosaik-dark-card p-6 max-w-sm w-full border border-mosaik-gray/20 dark:border-mosaik-dark-border">
+            <h2 className="text-sm font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-2">Apply Discount</h2>
+            <p className="text-sm text-mosaik-gray dark:text-gray-400 mb-4">
+              Enter discount percentage (0–100). New price = current price × (1 − % / 100).
+            </p>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              step={0.1}
+              value={discountInput}
+              onChange={(e) => setDiscountInput(e.target.value)}
+              placeholder="e.g. 15"
+              className="rounded-none w-full py-2 px-4 border border-mosaik-gray/50 dark:border-mosaik-dark-border bg-transparent dark:bg-mosaik-dark-bg text-mosaik-black dark:text-white text-sm mb-6"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleBulkDiscount}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase bg-mosaik-black text-white disabled:opacity-50"
+              >
+                {bulkActionLoading ? 'Applying…' : 'Apply'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setDiscountModal(false); setDiscountInput('') }}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase border border-mosaik-gray/50 dark:border-mosaik-dark-border text-mosaik-black dark:text-white disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bulkDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-mosaik-dark-card p-6 max-w-sm w-full border border-mosaik-gray/20 dark:border-mosaik-dark-border">
+            <h2 className="text-sm font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-2">Delete Selected Products</h2>
+            <p className="text-sm text-mosaik-gray dark:text-gray-400 mb-6">
+              Delete {selectedProductIds.length} product(s)? This cannot be undone.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {bulkActionLoading ? 'Deleting…' : 'Delete'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setBulkDeleteConfirm(false)}
+                disabled={bulkActionLoading}
+                className="rounded-none px-4 py-2 text-xs uppercase border border-mosaik-gray/50 dark:border-mosaik-dark-border text-mosaik-black dark:text-white disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -536,6 +764,7 @@ type FormState = {
   imageUrls: [string, string, string]
   category: string
   color: string
+  visible: boolean
   variants: { size: string; stock: number }[]
 }
 
@@ -589,6 +818,18 @@ function ProductForm({
           )}
         </div>
       ))}
+      <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="visible"
+            checked={form.visible}
+            onChange={(e) => setForm({ ...form, visible: e.target.checked })}
+            className="rounded border-mosaik-gray/50 dark:border-mosaik-dark-border"
+          />
+          <label htmlFor="visible" className="text-xs uppercase tracking-widest text-mosaik-gray dark:text-gray-400">
+            Visible (show on storefront)
+          </label>
+        </div>
       <div className="space-y-4">
         <p className="text-xs uppercase tracking-widest text-mosaik-gray dark:text-gray-400">
           Images (up to 3, first is primary)

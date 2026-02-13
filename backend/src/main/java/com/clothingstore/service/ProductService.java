@@ -19,13 +19,17 @@ public class ProductService {
     public List<Product> getAllProducts(String category) {
         String sanitized = InputSanitizer.sanitizeSearch(category, CATEGORY_MAX_LENGTH);
         if (sanitized != null && !sanitized.isBlank()) {
-            return productRepository.findByCategoryIgnoreCaseOrderByNameAsc(sanitized);
+            return productRepository.findByVisibleTrueAndCategoryIgnoreCaseOrderByNameAsc(sanitized);
         }
-        return productRepository.findAllByOrderByNameAsc();
+        return productRepository.findByVisibleTrueOrderByNameAsc();
     }
 
     public Product getById(Long id) {
-        return productRepository.findById(id)
+        Product p = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+        if (Boolean.FALSE.equals(p.getVisible())) {
+            throw new RuntimeException("Product not found");
+        }
+        return p;
     }
 }

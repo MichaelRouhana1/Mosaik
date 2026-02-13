@@ -41,6 +41,9 @@ public class Product {
     @Column(length = 100)
     private String sizes;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private Boolean visible = true;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProductVariant> variants = new ArrayList<>();
 }

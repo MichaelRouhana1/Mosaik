@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AdminProductService {
@@ -65,6 +67,7 @@ public class AdminProductService {
         }
         product.setCategory(category);
         product.setColor(InputSanitizer.sanitizeText(request.getColor(), 50));
+        product.setVisible(request.getVisible() != null ? request.getVisible() : true);
         product = productRepository.save(product);
 
         if (request.getVariants() != null && !request.getVariants().isEmpty()) {
@@ -122,6 +125,9 @@ public class AdminProductService {
         if (request.getColor() != null) {
             product.setColor(InputSanitizer.sanitizeText(request.getColor(), 50));
         }
+        if (request.getVisible() != null) {
+            product.setVisible(request.getVisible());
+        }
         Product savedProduct = productRepository.save(product);
 
         if (request.getVariants() != null) {
@@ -156,5 +162,37 @@ public class AdminProductService {
             throw new RuntimeException("Product not found: " + id);
         }
         productRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void bulkDelete(List<Long> productIds) {
+        for (Long id : productIds) {
+            if (!productRepository.existsById(id)) {
+                throw new RuntimeException("Product not found: " + id);
+            }
+            productRepository.deleteById(id);
+        }
+    }
+
+    @Transactional
+    public void bulkVisibility(List<Long> productIds, boolean visible) {
+        for (Long id : productIds) {
+            Product p = productRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+            p.setVisible(visible);
+            productRepository.save(p);
+        }
+    }
+
+    @Transactional
+    public void bulkDiscount(List<Long> productIds, double discountPercentage) {
+        double multiplier = 1.0 - (discountPercentage / 100.0);
+        for (Long id : productIds) {
+            Product p = productRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+            double newPrice = p.getPrice() * multiplier;
+            p.setPrice(Math.max(0, newPrice));
+            productRepository.save(p);
+        }
     }
 }

@@ -36,5 +36,7 @@ public class CreateProductRequest {
     @Size(max = 50)
     private String color;
 
+    private Boolean visible = true;
+
     private List<@Valid VariantRequest> variants;
 }
