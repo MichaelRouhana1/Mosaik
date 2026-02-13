@@ -1,0 +1,7 @@
+# Copy this file to application-local.properties and add your Stripe key.
+# application-local.properties is gitignored and will not be committed.
+#
+# cp application-local.properties.example application-local.properties
+# Then edit application-local.properties and replace the placeholder with your sk_test_... key.
+
+stripe.secret.key=sk_test_your_key_here
