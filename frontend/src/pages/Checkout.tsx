@@ -48,18 +48,18 @@ export default function Checkout() {
   if (success) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white dark:bg-mosaik-dark-card rounded-xl shadow-lg p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h1>
-          <p className="text-gray-600 mb-8">Thank you for your order. We'll send a confirmation to your email.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Placed Successfully!</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">Thank you for your order. We'll send a confirmation to your email.</p>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="px-6 py-3 font-medium text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors"
+            className="px-6 py-3 font-medium text-white bg-gray-900 dark:bg-mosaik-black rounded-none hover:bg-gray-800 dark:hover:bg-mosaik-black/90 transition-colors"
           >
             Continue Shopping
           </button>
@@ -71,13 +71,13 @@ export default function Checkout() {
   if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
-          <p className="text-gray-600 mb-6">Add some items before checking out.</p>
+        <div className="bg-white dark:bg-mosaik-dark-card rounded-xl shadow-lg p-8 text-center">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Your cart is empty</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Add some items before checking out.</p>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="px-6 py-3 font-medium text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors"
+            className="px-6 py-3 font-medium text-white bg-gray-900 dark:bg-mosaik-black rounded-none hover:bg-gray-800 dark:hover:bg-mosaik-black/90 transition-colors"
           >
             Back to Products
           </button>
@@ -88,14 +88,14 @@ export default function Checkout() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Checkout</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Checkout</h1>
 
       <form onSubmit={handleSubmit} className="lg:grid lg:grid-cols-2 lg:gap-12">
         <div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Guest Information</h2>
+          <div className="bg-white dark:bg-mosaik-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-mosaik-dark-border p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Guest Information</h2>
             <div>
-              <label htmlFor="guestEmail" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="guestEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email (optional)
               </label>
               <input
@@ -107,30 +107,31 @@ export default function Checkout() {
                   setGuestEmail(e.target.value)
                   setError(null)
                 }}
-                className="w-full px-4 py-2.5 rounded-none border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="w-full px-4 py-2.5 rounded-none border border-gray-200 dark:border-mosaik-dark-border bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent"
                 placeholder="you@example.com"
               />
-              <p className="mt-1 text-sm text-gray-500">Leave blank to use guest@example.com</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Leave blank to use guest@example.com</p>
             </div>
           </div>
         </div>
 
         <div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+          <div className="bg-white dark:bg-mosaik-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-mosaik-dark-border p-6 sticky top-24">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
             <ul className="space-y-3 mb-6">
-              {items.map(({ product, quantity }) => (
-                <li key={product.id} className="flex justify-between text-sm">
-                  <span className="text-gray-700">
-                    {product.name} × {quantity}
+              {items.map(({ product, quantity, size }) => (
+                <li key={`${product.id}-${size ?? ''}`} className="flex justify-between text-sm">
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {product.name}
+                    {size && ` (${size})`} × {quantity}
                   </span>
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     ${(product.price * quantity).toFixed(2)}
                   </span>
                 </li>
               ))}
             </ul>
-            <div className="flex justify-between text-lg font-semibold text-gray-900 border-t border-gray-200 pt-4 mb-6">
+            <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-mosaik-dark-border pt-4 mb-6">
               <span>Total</span>
               <span>${totalPrice.toFixed(2)}</span>
             </div>
@@ -142,7 +143,7 @@ export default function Checkout() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 font-medium text-white bg-gray-900 rounded-none hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 font-medium text-white bg-gray-900 dark:bg-mosaik-black rounded-none hover:bg-gray-800 dark:hover:bg-mosaik-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Placing Order...' : 'Place Order'}
             </button>

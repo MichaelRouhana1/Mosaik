@@ -18,12 +18,12 @@ export default function CategoryHeader({ categorySlug }: CategoryHeaderProps) {
   const descriptor = info?.descriptor ?? 'Curated essentials for the modern wardrobe'
 
   return (
-    <header className="h-[150px] flex items-center justify-center bg-white border-b border-mosaik-gray/20">
+    <header className="h-[150px] flex items-center justify-center bg-white dark:bg-mosaik-dark-bg border-b border-mosaik-gray/20 dark:border-mosaik-dark-border">
       <div className="text-center">
-        <h1 className="text-xl font-normal text-mosaik-black mb-1">
+        <h1 className="text-xl font-normal text-mosaik-black dark:text-white mb-1">
           {displayName}
         </h1>
-        <p className="text-sm font-light text-mosaik-gray">
+        <p className="text-sm font-light text-mosaik-gray dark:text-gray-400">
           {descriptor}
         </p>
       </div>

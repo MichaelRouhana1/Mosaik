@@ -19,4 +19,9 @@ public class ProductService {
         }
         return productRepository.findAllByOrderByNameAsc();
     }
+
+    public Product getById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+    }
 }

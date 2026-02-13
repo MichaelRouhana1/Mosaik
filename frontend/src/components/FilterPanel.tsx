@@ -30,7 +30,7 @@ function FilterSection({
 }) {
   return (
     <div className="mb-8">
-      <h3 className="text-xs font-medium uppercase tracking-widest text-mosaik-black mb-4">
+      <h3 className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-4">
         {title}
       </h3>
       <div className="flex flex-wrap gap-2">
@@ -42,7 +42,7 @@ function FilterSection({
             className={`rounded-none px-4 py-2 text-xs font-normal uppercase tracking-widest transition-colors ${
               selected.includes(opt)
                 ? 'bg-mosaik-black text-white'
-                : 'bg-mosaik-gray-soft text-mosaik-black hover:bg-mosaik-gray/30'
+                : 'bg-mosaik-gray-soft dark:bg-mosaik-dark-border text-mosaik-black dark:text-white hover:bg-mosaik-gray/30 dark:hover:bg-mosaik-dark-border/80'
             }`}
           >
             {opt}
@@ -77,7 +77,7 @@ export default function FilterPanel({
         aria-hidden
       />
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-[320px] max-w-[85vw] z-50 bg-white shadow-xl overflow-y-auto transition-transform duration-200 ease-out ${
+        className={`fixed left-0 top-0 bottom-0 w-[320px] max-w-[85vw] z-50 bg-white dark:bg-mosaik-dark-card shadow-xl overflow-y-auto transition-transform duration-200 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -85,14 +85,14 @@ export default function FilterPanel({
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-6 right-6 text-mosaik-black hover:opacity-60"
+            className="absolute top-6 right-6 text-mosaik-black dark:text-white hover:opacity-60"
             aria-label="Close filters"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <h2 className="text-sm font-medium uppercase tracking-widest text-mosaik-black mb-8">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-8">
             Filters
           </h2>
           <FilterSection

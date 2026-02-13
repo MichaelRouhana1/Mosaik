@@ -112,7 +112,7 @@ export default function ProductList() {
       <div className="flex items-center justify-center min-h-[400px] bg-white">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-mosaik-gray/30 border-t-mosaik-black animate-spin" />
-          <p className="text-sm font-light text-mosaik-gray">Loading products...</p>
+          <p className="text-sm font-light text-mosaik-gray dark:text-gray-400">Loading products...</p>
         </div>
       </div>
     )
@@ -122,8 +122,8 @@ export default function ProductList() {
     return (
       <div className="flex items-center justify-center min-h-[400px] bg-white">
         <div className="text-center max-w-md p-8 border border-mosaik-gray/30">
-          <p className="text-mosaik-black font-medium">{error}</p>
-          <p className="mt-2 text-sm text-mosaik-gray">
+          <p className="text-mosaik-black dark:text-white font-medium">{error}</p>
+          <p className="mt-2 text-sm text-mosaik-gray dark:text-gray-400">
             Make sure the backend is running at http://localhost:8080
           </p>
         </div>
@@ -132,7 +132,7 @@ export default function ProductList() {
   }
 
   return (
-    <div className="w-full bg-white min-h-screen">
+    <div className="w-full bg-white dark:bg-mosaik-dark-bg min-h-screen">
       <CategoryHeader categorySlug={categorySlug} />
       <UtilityBar
         onFiltersClick={() => setFilterPanelOpen(true)}
@@ -149,7 +149,7 @@ export default function ProductList() {
 
       <main className="w-full px-6 py-8">
         {filteredAndSorted.length === 0 ? (
-          <p className="text-center text-sm font-light text-mosaik-gray py-16">
+          <p className="text-center text-sm font-light text-mosaik-gray dark:text-gray-400 py-16">
             No products match your filters.
           </p>
         ) : (
@@ -168,7 +168,7 @@ export default function ProductList() {
                       alt=""
                       className="w-full h-full object-cover"
                     />
-                    <p className="absolute bottom-4 left-4 text-xs font-light text-white tracking-widest uppercase">
+                    <p className="absolute bottom-4 left-4 text-xs font-light text-white dark:text-white tracking-widest uppercase">
                       {EDITORIAL_TILES[item.index].caption}
                     </p>
                   </div>
@@ -181,7 +181,7 @@ export default function ProductList() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="rounded-none px-8 py-3 text-xs font-medium uppercase tracking-widest text-mosaik-black border border-mosaik-black hover:bg-mosaik-black hover:text-white transition-colors duration-200"
+                  className="rounded-none px-8 py-3 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white border border-mosaik-black dark:border-white hover:bg-mosaik-black hover:text-white transition-colors duration-200"
                 >
                   Load More
                 </button>

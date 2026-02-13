@@ -7,7 +7,7 @@
     font-family: 'Inter', Helvetica, sans-serif;
   }
   body {
-    background-color: #ffffff;
+    @apply bg-white dark:bg-mosaik-dark-bg text-mosaik-black dark:text-white transition-colors duration-200;
   }
   button {
     border-radius: 0;

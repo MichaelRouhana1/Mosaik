@@ -27,8 +27,14 @@ public class Product {
 
     private String imageUrl;
 
+    @Column(length = 500)
+    private String additionalImageUrls;
+
     @Column(nullable = false)
     private String category;
 
     private String color;
+
+    @Column(length = 100)
+    private String sizes;
 }

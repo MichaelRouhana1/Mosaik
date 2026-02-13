@@ -14,20 +14,20 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 export default function UtilityBar({ onFiltersClick, sort, onSortChange }: UtilityBarProps) {
   return (
-    <div className="h-14 flex items-center justify-between px-6 border-b border-mosaik-gray/20 bg-white">
+    <div className="h-14 flex items-center justify-between px-6 border-b border-mosaik-gray/20 dark:border-mosaik-dark-border bg-white dark:bg-mosaik-dark-bg">
       <button
         type="button"
         onClick={onFiltersClick}
-        className="text-xs font-medium uppercase tracking-widest text-mosaik-black hover:opacity-60 transition-opacity"
+        className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white hover:opacity-60 transition-opacity"
       >
         Filters
       </button>
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium uppercase tracking-widest text-mosaik-gray">Sort</span>
+        <span className="text-xs font-medium uppercase tracking-widest text-mosaik-gray dark:text-gray-400">Sort</span>
         <select
           value={sort}
           onChange={(e) => onSortChange(e.target.value as SortOption)}
-          className="text-xs font-normal text-mosaik-black bg-transparent border-none outline-none cursor-pointer uppercase tracking-widest appearance-none pr-6"
+          className="text-xs font-normal text-mosaik-black dark:text-white bg-transparent border-none outline-none cursor-pointer uppercase tracking-widest appearance-none pr-6"
         >
           {SORT_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>
