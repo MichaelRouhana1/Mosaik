@@ -14,9 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class AdminProductService {
@@ -125,22 +122,22 @@ public class AdminProductService {
         if (request.getColor() != null) {
             product.setColor(InputSanitizer.sanitizeText(request.getColor(), 50));
         }
-        product = productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
 
         if (request.getVariants() != null) {
             for (VariantRequest vr : request.getVariants()) {
                 if (vr.getSize() == null || vr.getSize().isBlank()) continue;
                 String size = vr.getSize().trim();
-                productVariantRepository.findByProductAndSize(product, size)
+                productVariantRepository.findByProductAndSize(savedProduct, size)
                         .ifPresentOrElse(
                                 existing -> {
                                     existing.setStock(Math.max(0, vr.getStock()));
                                     productVariantRepository.save(existing);
                                 },
                                 () -> {
-                                    String sku = product.getId() + "-" + size;
+                                    String sku = savedProduct.getId() + "-" + size;
                                     ProductVariant variant = new ProductVariant();
-                                    variant.setProduct(product);
+                                    variant.setProduct(savedProduct);
                                     variant.setSize(size);
                                     variant.setStock(Math.max(0, vr.getStock()));
                                     variant.setSku(sku);
@@ -150,7 +147,7 @@ public class AdminProductService {
             }
         }
 
-        return product;
+        return savedProduct;
     }
 
     @Transactional
