@@ -1,8 +1,73 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { adminFetch } from '../api/adminApi'
 import { useToast } from '../context/ToastContext'
-import type { Product } from '../types/product'
+import type { Product, ProductVariant } from '../types/product'
 import ProductImageUpload from './ProductImageUpload'
+
+function StockPopover({
+  variants,
+  totalStock,
+  children,
+}: {
+  variants: ProductVariant[]
+  totalStock: number
+  children: React.ReactNode
+}) {
+  const [show, setShow] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const variantMap = new Map(variants.map((v) => [v.size, v.stock]))
+  const sizes = variants.length > 0 ? variants.map((v) => v.size) : ['XS', 'S', 'M', 'L', 'XL']
+
+  const handleEnter = () => {
+    timerRef.current = setTimeout(() => setShow(true), 250)
+  }
+
+  const handleLeave = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    setShow(false)
+  }
+
+  return (
+    <div
+      className="relative inline-block"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      <span className="cursor-default">{children}</span>
+      {show && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50">
+          <div className="relative bg-white dark:bg-mosaik-dark-card border border-mosaik-gray/30 dark:border-mosaik-dark-border shadow-lg py-3 px-4 min-w-[200px]">
+            <div
+              className="absolute left-1/2 -translate-x-1/2 -top-1.5 w-0 h-0 border-l-[6px] border-r-[6px] border-b-[6px] border-l-transparent border-r-transparent border-b-white dark:border-b-mosaik-dark-card"
+            />
+            <p className="text-[10px] font-medium uppercase tracking-widest text-mosaik-gray dark:text-gray-400 text-center mb-2">
+              Stock
+            </p>
+            <p className="text-sm font-medium text-mosaik-black dark:text-white text-center mb-3">
+              {totalStock}
+            </p>
+            <div className="flex gap-2 justify-center">
+              {sizes.map((size) => (
+                <div
+                  key={size}
+                  className="flex flex-col items-center min-w-[32px] py-2 px-2 border border-mosaik-gray/30 dark:border-mosaik-dark-border bg-mosaik-gray-soft/50 dark:bg-mosaik-dark-bg/50"
+                >
+                  <span className="text-[10px] uppercase text-mosaik-gray dark:text-gray-400">{size}</span>
+                  <span className="text-sm font-medium text-mosaik-black dark:text-white">
+                    {variantMap.get(size) ?? 0}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface ProductsPage {
   content: Product[]
@@ -27,7 +92,36 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<number | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null)
+  const [sort, setSort] = useState<{ by: 'product' | 'stock' | 'price'; dir: 'asc' | 'desc' } | null>(null)
   const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL']
+
+  const handleSort = (col: 'product' | 'stock' | 'price') => {
+    setSort((prev) => {
+      if (prev?.by === col) {
+        return { by: col, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+      }
+      return { by: col, dir: 'asc' }
+    })
+  }
+
+  const sortedProducts = (() => {
+    const list = [...(data?.content ?? [])]
+    if (!sort) return list
+    const { by: sortBy, dir: sortDir } = sort
+    return list.sort((a, b) => {
+      let cmp = 0
+      if (sortBy === 'product') {
+        cmp = a.name.localeCompare(b.name)
+      } else if (sortBy === 'stock') {
+        const sa = (a.variants ?? []).reduce((s, v) => s + v.stock, 0)
+        const sb = (b.variants ?? []).reduce((s, v) => s + v.stock, 0)
+        cmp = sa - sb
+      } else if (sortBy === 'price') {
+        cmp = a.price - b.price
+      }
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  })()
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -236,18 +330,68 @@ export default function AdminProducts() {
             <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b border-mosaik-gray/20 dark:border-mosaik-dark-border bg-mosaik-gray-soft dark:bg-mosaik-dark-card">
-                  <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Name</th>
+                  <th className="text-left py-3 px-4">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('product')}
+                      className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white hover:opacity-80 flex items-center gap-1"
+                    >
+                      Product
+                      {sort?.by === 'product' && (sort.dir === 'asc' ? ' ↑' : ' ↓')}
+                    </button>
+                  </th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Category</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Price</th>
+                  <th className="text-left py-3 px-4">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('stock')}
+                      className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white hover:opacity-80 flex items-center gap-1"
+                    >
+                      Stock
+                      {sort?.by === 'stock' && (sort.dir === 'asc' ? ' ↑' : ' ↓')}
+                    </button>
+                  </th>
+                  <th className="text-left py-3 px-4">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('price')}
+                      className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white hover:opacity-80 flex items-center gap-1"
+                    >
+                      Price
+                      {sort?.by === 'price' && (sort.dir === 'asc' ? ' ↑' : ' ↓')}
+                    </button>
+                  </th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Color</th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {(data?.content ?? []).map((p) => (
+                {sortedProducts.map((p) => {
+                  const totalStock = (p.variants ?? []).reduce((sum, v) => sum + v.stock, 0)
+                  return (
                   <tr key={p.id} className="border-b border-mosaik-gray/10 dark:border-mosaik-dark-border last:border-0">
-                    <td className="py-3 px-4 text-mosaik-black dark:text-white">{p.name}</td>
+                    <td className="py-3 px-4 flex items-center gap-3">
+                      {p.imageUrl ? (
+                        <img
+                          src={p.imageUrl}
+                          alt=""
+                          className="w-10 h-12 object-cover bg-mosaik-gray-soft dark:bg-mosaik-dark-bg"
+                        />
+                      ) : (
+                        <div className="w-10 h-12 bg-mosaik-gray-soft dark:bg-mosaik-dark-bg" />
+                      )}
+                      <span className="text-mosaik-black dark:text-white">{p.name}</span>
+                    </td>
                     <td className="py-3 px-4 text-mosaik-black dark:text-white">{p.category}</td>
+                    <td className="py-3 px-4">
+                      <StockPopover variants={p.variants ?? []} totalStock={totalStock}>
+                        {totalStock === 0 ? (
+                          <span className="text-red-600 dark:text-red-400 font-medium">0 (Out of Stock)</span>
+                        ) : (
+                          <span className="text-mosaik-black dark:text-white">{totalStock}</span>
+                        )}
+                      </StockPopover>
+                    </td>
                     <td className="py-3 px-4 text-mosaik-black dark:text-white">${p.price.toFixed(2)}</td>
                     <td className="py-3 px-4 text-mosaik-gray dark:text-gray-400">{p.color || '—'}</td>
                     <td className="py-3 px-4">
@@ -268,7 +412,7 @@ export default function AdminProducts() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>

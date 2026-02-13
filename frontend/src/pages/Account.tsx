@@ -380,6 +380,7 @@ export default function Account() {
         try {
           await login(form.email, form.password)
           toast.success('Signed in')
+          navigate('/')
         } catch (customerErr) {
           try {
             await adminLogin(form.email, form.password)
