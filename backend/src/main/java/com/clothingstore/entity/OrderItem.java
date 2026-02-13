@@ -29,6 +29,17 @@ public class OrderItem {
     @Column(nullable = false)
     private Double unitPrice;
 
+    @Column(length = 20)
+    private String size;
+
+    @Column(length = 100)
+    private String sku;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_variant_id")
+    @JsonIgnore
+    private ProductVariant productVariant;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     @JsonIgnore

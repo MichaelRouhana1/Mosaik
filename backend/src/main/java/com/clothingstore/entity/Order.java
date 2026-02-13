@@ -26,6 +26,10 @@ public class Order {
     @Column(nullable = false)
     private Double totalPrice;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'PENDING'")
+    private OrderStatus status = OrderStatus.PENDING;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
