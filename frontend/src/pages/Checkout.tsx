@@ -4,10 +4,11 @@ import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 
 const API_URL = 'http://localhost:8080/api/orders'
+const PAYMENT_URL = 'http://localhost:8080/api/payment/create-checkout-session'
 
 export default function Checkout() {
   const navigate = useNavigate()
-  const { items, totalPrice, clearCart } = useCart()
+  const { items, totalPrice } = useCart()
   const { profile, isAuthenticated } = useAuth()
   const [guestEmail, setGuestEmail] = useState('')
 
@@ -18,7 +19,6 @@ export default function Checkout() {
   }, [isAuthenticated, profile?.email])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,7 +26,7 @@ export default function Checkout() {
     setLoading(true)
 
     try {
-      const response = await fetch(API_URL, {
+      const orderResponse = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -40,42 +40,48 @@ export default function Checkout() {
         }),
       })
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        const message = errData.message || errData.error || (response.status === 400 ? 'Invalid form data' : `Request failed: ${response.status}`)
+      if (!orderResponse.ok) {
+        const errData = await orderResponse.json().catch(() => ({}))
+        const message = errData.message || errData.error || (orderResponse.status === 400 ? 'Invalid form data' : `Request failed: ${orderResponse.status}`)
         throw new Error(message)
       }
 
-      setSuccess(true)
-      clearCart()
+      const order = await orderResponse.json()
+      const orderId = order.id
+
+      const sessionPayload: { orderId: number; guestEmail?: string } = { orderId }
+      if (!isAuthenticated) {
+        sessionPayload.guestEmail = guestEmail?.trim() || 'guest@example.com'
+      }
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      const token = localStorage.getItem('customer_token')
+      if (token) {
+        headers.Authorization = `Bearer ${token}`
+      }
+
+      const sessionResponse = await fetch(PAYMENT_URL, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(sessionPayload),
+      })
+
+      if (!sessionResponse.ok) {
+        const errData = await sessionResponse.json().catch(() => ({}))
+        throw new Error(errData.message || 'Failed to create checkout session')
+      }
+
+      const { url } = await sessionResponse.json()
+      if (url) {
+        window.location.href = url
+      } else {
+        throw new Error('No checkout URL received')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-white dark:bg-mosaik-dark-card rounded-xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Placed Successfully!</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">Thank you for your order. We'll send a confirmation to your email.</p>
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="px-6 py-3 font-medium text-white bg-gray-900 dark:bg-mosaik-black rounded-none hover:bg-gray-800 dark:hover:bg-mosaik-black/90 transition-colors"
-          >
-            Continue Shopping
-          </button>
-        </div>
-      </div>
-    )
   }
 
   if (items.length === 0) {
@@ -168,7 +174,7 @@ export default function Checkout() {
               disabled={loading}
               className="w-full py-3 px-4 font-medium text-white bg-gray-900 dark:bg-mosaik-black rounded-none hover:bg-gray-800 dark:hover:bg-mosaik-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Placing Order...' : 'Place Order'}
+              {loading ? 'Redirecting to payment...' : 'Place Order'}
             </button>
           </div>
         </div>

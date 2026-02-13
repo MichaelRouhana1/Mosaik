@@ -9,6 +9,8 @@ import LandingNavbar from './components/LandingNavbar'
 import ProductList from './pages/ProductList'
 import ProductDetail from './pages/ProductDetail'
 import Checkout from './pages/Checkout'
+import CheckoutSuccess from './pages/CheckoutSuccess'
+import CheckoutCancel from './pages/CheckoutCancel'
 import CartDrawer from './components/CartDrawer'
 import Landing from './pages/Landing'
 import Editorial from './pages/Editorial'
@@ -85,6 +87,22 @@ function App() {
               <LandingNavbar onCartClick={() => setIsCartOpen(true)} />
               <div className="pt-14">
                 <Checkout />
+              </div>
+            </>
+          } />
+          <Route path="/checkout/success" element={
+            <>
+              <LandingNavbar onCartClick={() => setIsCartOpen(true)} />
+              <div className="pt-14">
+                <CheckoutSuccess />
+              </div>
+            </>
+          } />
+          <Route path="/checkout/cancel" element={
+            <>
+              <LandingNavbar onCartClick={() => setIsCartOpen(true)} />
+              <div className="pt-14">
+                <CheckoutCancel />
               </div>
             </>
           } />
