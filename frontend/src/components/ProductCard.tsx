@@ -32,6 +32,11 @@ export default function ProductCard({ product }: ProductCardProps) {
     ? product.sizes.split(',').map((s) => s.trim()).filter(Boolean)
     : DEFAULT_SIZES
 
+  const variantMap = new Map((product.variants ?? []).map((v) => [v.size, v]))
+  const totalStock = (product.variants ?? []).reduce((sum, v) => sum + v.stock, 0)
+  const isOutOfStock = totalStock === 0
+  const isSizeInStock = (size: string) => (variantMap.get(size)?.stock ?? 0) > 0
+
   const handleImageError = () => {
     setImageErrors((prev) => ({ ...prev, [currentImageIndex]: true }))
   }
@@ -51,6 +56,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleSizeClick = (e: React.MouseEvent, size: string) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!isSizeInStock(size)) return
     addToCart(product, size)
     toast.success(`Added ${product.name} (${size}) to bag`)
   }
@@ -64,9 +70,17 @@ export default function ProductCard({ product }: ProductCardProps) {
           <img
             src={currentSrc}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover ${isOutOfStock ? 'opacity-70' : ''}`}
             onError={handleImageError}
           />
+
+          {isOutOfStock && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <span className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white bg-mosaik-black/90 backdrop-blur-sm">
+                Out of stock
+              </span>
+            </div>
+          )}
 
           {/* Image navigation arrows - visible on hover when multiple images */}
           {hasMultipleImages && (
@@ -94,24 +108,34 @@ export default function ProductCard({ product }: ProductCardProps) {
             </>
           )}
 
-          {/* Size selection overlay - visible on hover */}
-          <div className="absolute inset-x-0 bottom-0 bg-white/95 dark:bg-mosaik-dark-bg/95 dark:border-t dark:border-mosaik-dark-border p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <p className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-2">
-              Select size
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={(e) => handleSizeClick(e, size)}
-                  className="px-3 py-1.5 text-xs font-medium uppercase tracking-widest border border-mosaik-black dark:border-white text-mosaik-black dark:text-white hover:bg-mosaik-black dark:hover:bg-white hover:text-white dark:hover:text-mosaik-black transition-colors"
-                >
-                  {size}
-                </button>
-              ))}
+          {/* Size selection overlay - visible on hover (hidden when out of stock) */}
+          {!isOutOfStock && (
+            <div className="absolute inset-x-0 bottom-0 bg-white/95 dark:bg-mosaik-dark-bg/95 dark:border-t dark:border-mosaik-dark-border p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <p className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-2">
+                Select size
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((size) => {
+                  const inStock = isSizeInStock(size)
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={(e) => handleSizeClick(e, size)}
+                      disabled={!inStock}
+                      className={`px-3 py-1.5 text-xs font-medium uppercase tracking-widest transition-colors ${
+                        inStock
+                          ? 'border border-mosaik-black dark:border-white text-mosaik-black dark:text-white hover:bg-mosaik-black dark:hover:bg-white hover:text-white dark:hover:text-mosaik-black'
+                          : 'border border-mosaik-gray/40 dark:border-mosaik-dark-border text-mosaik-gray/60 dark:text-gray-500 opacity-60 cursor-not-allowed line-through'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
         <div className="mt-3">
           <h3 className="text-sm font-light text-mosaik-black dark:text-white truncate">

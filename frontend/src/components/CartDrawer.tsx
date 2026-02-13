@@ -71,8 +71,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <h3 className="font-medium text-gray-900 dark:text-white truncate">{product.name}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                       ${product.price.toFixed(2)} each
-                      {size && <span className="ml-1">· Size {size}</span>}
                     </p>
+                    {(product.color || size) && (
+                      <p className="text-xs text-mosaik-gray dark:text-gray-400 mt-0.5">
+                        {product.color && <span>Colour: {product.color}</span>}
+                        {product.color && size && ' | '}
+                        {size && <span>Size: {size}</span>}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 mt-2">
                       <button
                         type="button"

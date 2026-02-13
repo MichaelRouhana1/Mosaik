@@ -134,11 +134,19 @@ export default function Checkout() {
           <div className="bg-white dark:bg-mosaik-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-mosaik-dark-border p-6 sticky top-24">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
             <ul className="space-y-3 mb-6">
-              {items.map(({ product, quantity, size }) => (
-                <li key={`${product.id}-${size ?? ''}`} className="flex justify-between text-sm">
+              {items.map(({ product, quantity, size, sku }) => (
+                <li key={sku} className="flex justify-between text-sm">
                   <span className="text-gray-700 dark:text-gray-300">
                     {product.name}
-                    {size && ` (${size})`} × {quantity}
+                    {(product.color || size) && (
+                      <span className="text-gray-500 dark:text-gray-400">
+                        {' '}
+                        {product.color && `Colour: ${product.color}`}
+                        {product.color && size && ' | '}
+                        {size && `Size: ${size}`}
+                      </span>
+                    )}{' '}
+                    × {quantity}
                   </span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     ${(product.price * quantity).toFixed(2)}

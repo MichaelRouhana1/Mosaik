@@ -43,15 +43,30 @@ export default function ProductDetail() {
     setImageErrors((prev) => ({ ...prev, [index]: true }))
   }
 
+  const variantMap = new Map((product?.variants ?? []).map((v) => [v.size, v]))
   const sizes = product?.sizes
     ? product.sizes.split(',').map((s) => s.trim()).filter(Boolean)
     : DEFAULT_SIZES
 
+  const getStockForSize = (size: string) => variantMap.get(size)?.stock ?? 0
+  const isSizeInStock = (size: string) => getStockForSize(size) > 0
+
   const handleAddToBag = () => {
     if (!product) return
-    addToCart(product, selectedSize ?? undefined)
+    if (!selectedSize) {
+      toast.error('Please select a size')
+      return
+    }
+    if (!isSizeInStock(selectedSize)) {
+      toast.error('This size is out of stock')
+      return
+    }
+    addToCart(product, selectedSize)
     toast.success('Added to bag')
   }
+
+  const hasAnyInStock = sizes.some(isSizeInStock)
+  const canAddToCart = selectedSize != null && isSizeInStock(selectedSize)
 
   if (loading) {
     return (
@@ -151,20 +166,26 @@ export default function ProductDetail() {
               Size
             </p>
             <div className="flex flex-wrap gap-2">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-12 h-12 rounded-full text-xs font-medium uppercase tracking-widest transition-colors ${
-                    selectedSize === size
-                      ? 'bg-mosaik-black text-white'
-                      : 'border border-mosaik-gray/50 dark:border-mosaik-dark-border text-mosaik-black dark:text-white hover:border-mosaik-black dark:hover:border-white'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
+              {sizes.map((size) => {
+                const inStock = isSizeInStock(size)
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => inStock && setSelectedSize(size)}
+                    disabled={!inStock}
+                    className={`w-12 h-12 rounded-full text-xs font-medium uppercase tracking-widest transition-colors ${
+                      !inStock
+                        ? 'border border-mosaik-gray/30 dark:border-mosaik-dark-border text-mosaik-gray/50 dark:text-gray-600 opacity-60 cursor-not-allowed line-through'
+                        : selectedSize === size
+                          ? 'bg-mosaik-black text-white dark:bg-white dark:text-mosaik-black'
+                          : 'border border-mosaik-gray/50 dark:border-mosaik-dark-border text-mosaik-black dark:text-white hover:border-mosaik-black dark:hover:border-white'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                )
+              })}
             </div>
             <Link
               to="#"
@@ -174,13 +195,21 @@ export default function ProductDetail() {
             </Link>
           </div>
 
+          {!hasAnyInStock && (
+            <p className="mt-4 text-sm text-red-600 dark:text-red-400">This product is currently out of stock.</p>
+          )}
+
           <button
             type="button"
             onClick={handleAddToBag}
-            className="mt-10 w-full py-4 text-xs font-medium uppercase tracking-widest text-white bg-mosaik-black hover:opacity-90 transition-opacity"
+            disabled={!canAddToCart}
+            className="mt-10 w-full py-4 text-xs font-medium uppercase tracking-widest text-white bg-mosaik-black hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Add to bag
           </button>
+          {!selectedSize && hasAnyInStock && (
+            <p className="mt-2 text-xs text-mosaik-gray dark:text-gray-400">Please select a size</p>
+          )}
 
           <p className="mt-6 text-sm font-light text-mosaik-gray dark:text-gray-400">
             Free pickup at: MOSAIK
