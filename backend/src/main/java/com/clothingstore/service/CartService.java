@@ -41,7 +41,9 @@ public class CartService {
         java.util.Map<String, CartItemRequest> consolidated = new java.util.LinkedHashMap<>();
         for (CartItemRequest req : request.getItems()) {
             if (req.getQuantity() < 1) continue;
-            String key = req.getProductId() + ":" + (req.getSize() != null ? req.getSize() : "");
+            String key = (req.getSku() != null && !req.getSku().isBlank())
+                    ? req.getSku()
+                    : req.getProductId() + ":" + (req.getSize() != null ? req.getSize() : "");
             CartItemRequest existing = consolidated.get(key);
             if (existing != null) {
                 existing.setQuantity(existing.getQuantity() + req.getQuantity());
@@ -59,6 +61,10 @@ public class CartService {
             item.setProduct(product);
             item.setQuantity(req.getQuantity());
             item.setSize(req.getSize());
+            String sku = (req.getSku() != null && !req.getSku().isBlank())
+                    ? req.getSku()
+                    : req.getProductId() + "-" + (req.getSize() != null ? req.getSize() : "");
+            item.setSku(sku);
             cart.getItems().add(item);
         }
 
@@ -80,10 +86,14 @@ public class CartService {
 
     private Map<String, Object> toResponseItem(CartItem item) {
         Product p = item.getProduct();
+        String sku = item.getSku() != null && !item.getSku().isBlank()
+                ? item.getSku()
+                : p.getId() + "-" + (item.getSize() != null ? item.getSize() : "");
         return Map.of(
                 "productId", p.getId(),
                 "quantity", item.getQuantity(),
                 "size", item.getSize() != null ? item.getSize() : "",
+                "sku", sku,
                 "product", Map.of(
                         "id", p.getId(),
                         "name", p.getName(),

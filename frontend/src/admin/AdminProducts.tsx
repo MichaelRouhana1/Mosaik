@@ -27,6 +27,7 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<number | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null)
+  const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL']
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -34,6 +35,7 @@ export default function AdminProducts() {
     imageUrls: ['', '', ''] as [string, string, string],
     category: '',
     color: '',
+    variants: STANDARD_SIZES.map((size) => ({ size, stock: 0 })),
   })
 
   const load = () => {
@@ -80,6 +82,7 @@ export default function AdminProducts() {
       additional[0] || '',
       additional[1] || '',
     ]
+    const variantMap = new Map((p.variants ?? []).map((v) => [v.size, v.stock]))
     setForm({
       name: p.name,
       description: p.description || '',
@@ -87,6 +90,7 @@ export default function AdminProducts() {
       imageUrls,
       category: p.category,
       color: p.color || '',
+      variants: STANDARD_SIZES.map((size) => ({ size, stock: variantMap.get(size) ?? 0 })),
     })
   }
 
@@ -99,6 +103,7 @@ export default function AdminProducts() {
       imageUrls: ['', '', ''],
       category: '',
       color: '',
+      variants: STANDARD_SIZES.map((size) => ({ size, stock: 0 })),
     })
   }
 
@@ -120,6 +125,7 @@ export default function AdminProducts() {
           additionalImageUrls,
           category: form.category || null,
           color: form.color || null,
+          variants: form.variants.map((v) => ({ size: v.size, stock: v.stock })),
         }),
       })
       setEditing(null)
@@ -153,6 +159,7 @@ export default function AdminProducts() {
           additionalImageUrls,
           category: form.category,
           color: form.color || null,
+          variants: form.variants.map((v) => ({ size: v.size, stock: v.stock })),
         }),
       })
       setCreating(false)
@@ -385,6 +392,7 @@ type FormState = {
   imageUrls: [string, string, string]
   category: string
   color: string
+  variants: { size: string; stock: number }[]
 }
 
 function ProductForm({
@@ -450,6 +458,35 @@ function ProductForm({
             slotLabel={i === 0 ? 'Image 1 (required)' : `Image ${i + 1} (optional)`}
           />
         ))}
+      </div>
+
+      <div className="space-y-4 pt-4 border-t border-mosaik-gray/20 dark:border-mosaik-dark-border">
+        <p className="text-xs uppercase tracking-widest text-mosaik-gray dark:text-gray-400">
+          Sizes &amp; Inventory
+        </p>
+        <p className="text-xs text-mosaik-gray dark:text-gray-400">
+          Set stock for each size. Use 0 if not stocked.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          {form.variants.map((v, i) => (
+            <div key={v.size}>
+              <label className="block text-xs uppercase tracking-widest text-mosaik-gray dark:text-gray-400 mb-1">
+                {v.size}
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={v.stock}
+                onChange={(e) => {
+                  const next = [...form.variants]
+                  next[i] = { ...next[i], stock: Math.max(0, parseInt(e.target.value, 10) || 0) }
+                  setForm({ ...form, variants: next })
+                }}
+                className="rounded-none w-full py-2 px-4 border border-mosaik-gray/50 dark:border-mosaik-dark-border bg-transparent dark:bg-mosaik-dark-bg text-mosaik-black dark:text-white text-sm"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

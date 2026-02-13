@@ -92,3 +92,10 @@ WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Navy Windbreaker Jacket')
 
 -- Default sizes for all products (XS,S,M,L,XL)
 UPDATE products SET sizes = 'XS,S,M,L,XL' WHERE sizes IS NULL OR sizes = '';
+
+-- Create ProductVariants for existing products (sku format: productId-size)
+INSERT INTO product_variants (product_id, size, stock, sku)
+SELECT p.id, s.size_name, 50, p.id::text || '-' || s.size_name
+FROM products p
+CROSS JOIN (VALUES ('XS'), ('S'), ('M'), ('L'), ('XL')) AS s(size_name)
+WHERE NOT EXISTS (SELECT 1 FROM product_variants pv WHERE pv.sku = p.id::text || '-' || s.size_name);

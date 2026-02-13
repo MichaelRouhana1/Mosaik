@@ -1,8 +1,11 @@
 package com.clothingstore.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class UpdateProductRequest {
@@ -27,4 +30,6 @@ public class UpdateProductRequest {
 
     @Size(max = 50)
     private String color;
+
+    private List<@Valid VariantRequest> variants;
 }

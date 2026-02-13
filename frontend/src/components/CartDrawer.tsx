@@ -60,8 +60,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
           ) : (
             <ul className="space-y-4">
-              {items.map(({ product, quantity, size }) => (
-                <li key={`${product.id}-${size ?? ''}`} className="flex gap-4 pb-4 border-b border-gray-100 dark:border-mosaik-dark-border last:border-0">
+              {items.map(({ product, quantity, size, sku }) => (
+                <li key={sku} className="flex gap-4 pb-4 border-b border-gray-100 dark:border-mosaik-dark-border last:border-0">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
@@ -76,7 +76,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <div className="flex items-center gap-2 mt-2">
                       <button
                         type="button"
-                        onClick={() => updateQuantity(product.id, quantity - 1, size)}
+                        onClick={() => updateQuantity(sku, quantity - 1)}
                         className="w-8 h-8 flex items-center justify-center rounded-none border border-gray-200 dark:border-mosaik-dark-border hover:bg-gray-50 dark:hover:bg-mosaik-dark-border text-gray-600 dark:text-gray-300 font-medium"
                         aria-label="Decrease quantity"
                       >
@@ -85,7 +85,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <span className="w-8 text-center text-sm font-medium">{quantity}</span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(product.id, quantity + 1, size)}
+                        onClick={() => updateQuantity(sku, quantity + 1)}
                         className="w-8 h-8 flex items-center justify-center rounded-none border border-gray-200 dark:border-mosaik-dark-border hover:bg-gray-50 dark:hover:bg-mosaik-dark-border text-gray-600 dark:text-gray-300 font-medium"
                         aria-label="Increase quantity"
                       >
@@ -93,7 +93,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => removeFromCart(product.id, size)}
+                        onClick={() => removeFromCart(sku)}
                         className="ml-2 text-sm text-red-600 hover:text-red-700"
                       >
                         Remove

@@ -31,4 +31,7 @@ public class CartItem {
 
     @Column(length = 20)
     private String size;
+
+    @Column(length = 100)
+    private String sku;
 }

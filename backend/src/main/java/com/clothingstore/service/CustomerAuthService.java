@@ -7,6 +7,7 @@ import com.clothingstore.dto.RegisterRequest;
 import com.clothingstore.dto.UpdateProfileRequest;
 import com.clothingstore.entity.Customer;
 import com.clothingstore.entity.Order;
+import com.clothingstore.entity.OrderStatus;
 import com.clothingstore.repository.CustomerRepository;
 import com.clothingstore.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -81,7 +82,7 @@ public class CustomerAuthService {
     }
 
     public java.util.List<Order> getOrders(String email) {
-        return orderRepository.findByGuestEmailIgnoreCaseOrderByCreatedAtDesc(email);
+        return orderRepository.findByGuestEmailIgnoreCaseAndStatusNotOrderByCreatedAtDesc(email, OrderStatus.CART);
     }
 
     public LoginResponse register(RegisterRequest request) {

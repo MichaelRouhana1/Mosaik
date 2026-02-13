@@ -23,5 +23,7 @@ public class CreateOrderRequest {
     public static class OrderItemRequest {
         private Long productId;
         private Integer quantity;
+        private String sku;
+        private String size;
     }
 }

@@ -1,7 +1,9 @@
 package com.clothingstore.controller;
 
+import com.clothingstore.dto.UpdateOrderStatusRequest;
 import com.clothingstore.entity.Order;
 import com.clothingstore.service.AdminOrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +31,16 @@ public class AdminOrderController {
     public ResponseEntity<Order> getById(@PathVariable Long id) {
         try {
             Order order = adminOrderService.getById(id);
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Order> updateStatus(@PathVariable Long id, @Valid @RequestBody UpdateOrderStatusRequest request) {
+        try {
+            Order order = adminOrderService.updateStatus(id, request.getStatus());
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

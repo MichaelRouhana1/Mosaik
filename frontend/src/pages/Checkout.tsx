@@ -31,9 +31,11 @@ export default function Checkout() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           guestEmail: guestEmail || undefined,
-          items: items.map(({ product, quantity }) => ({
+          items: items.map(({ product, quantity, size, sku }) => ({
             productId: product.id,
             quantity,
+            size: size || undefined,
+            sku,
           })),
         }),
       })

@@ -2,14 +2,20 @@ package com.clothingstore.service;
 
 import com.clothingstore.dto.CreateProductRequest;
 import com.clothingstore.dto.UpdateProductRequest;
+import com.clothingstore.dto.VariantRequest;
 import com.clothingstore.entity.Product;
+import com.clothingstore.entity.ProductVariant;
 import com.clothingstore.repository.ProductRepository;
+import com.clothingstore.repository.ProductVariantRepository;
 import com.clothingstore.util.InputSanitizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +25,7 @@ public class AdminProductService {
     private static final int CATEGORY_MAX_LENGTH = 100;
 
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     public Page<Product> getAllProducts(String category, String search, Pageable pageable) {
         String sanitizedSearch = InputSanitizer.sanitizeSearch(search, SEARCH_MAX_LENGTH);
@@ -61,7 +68,23 @@ public class AdminProductService {
         }
         product.setCategory(category);
         product.setColor(InputSanitizer.sanitizeText(request.getColor(), 50));
-        return productRepository.save(product);
+        product = productRepository.save(product);
+
+        if (request.getVariants() != null && !request.getVariants().isEmpty()) {
+            for (VariantRequest vr : request.getVariants()) {
+                if (vr.getSize() == null || vr.getSize().isBlank()) continue;
+                String size = vr.getSize().trim();
+                String sku = product.getId() + "-" + size;
+                ProductVariant variant = new ProductVariant();
+                variant.setProduct(product);
+                variant.setSize(size);
+                variant.setStock(Math.max(0, vr.getStock()));
+                variant.setSku(sku);
+                productVariantRepository.save(variant);
+            }
+        }
+
+        return product;
     }
 
     private String sanitizeAdditionalImageUrls(String input) {
@@ -102,7 +125,32 @@ public class AdminProductService {
         if (request.getColor() != null) {
             product.setColor(InputSanitizer.sanitizeText(request.getColor(), 50));
         }
-        return productRepository.save(product);
+        product = productRepository.save(product);
+
+        if (request.getVariants() != null) {
+            for (VariantRequest vr : request.getVariants()) {
+                if (vr.getSize() == null || vr.getSize().isBlank()) continue;
+                String size = vr.getSize().trim();
+                productVariantRepository.findByProductAndSize(product, size)
+                        .ifPresentOrElse(
+                                existing -> {
+                                    existing.setStock(Math.max(0, vr.getStock()));
+                                    productVariantRepository.save(existing);
+                                },
+                                () -> {
+                                    String sku = product.getId() + "-" + size;
+                                    ProductVariant variant = new ProductVariant();
+                                    variant.setProduct(product);
+                                    variant.setSize(size);
+                                    variant.setStock(Math.max(0, vr.getStock()));
+                                    variant.setSku(sku);
+                                    productVariantRepository.save(variant);
+                                }
+                        );
+            }
+        }
+
+        return product;
     }
 
     @Transactional

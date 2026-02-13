@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { adminFetch } from '../api/adminApi'
+import { useToast } from '../context/ToastContext'
+
+const ORDER_STATUSES = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const
 
 interface OrderItem {
   id: number
@@ -8,12 +11,14 @@ interface OrderItem {
   productName: string
   quantity: number
   unitPrice: number
+  size?: string
 }
 
 interface Order {
   id: number
   guestEmail: string
   totalPrice: number
+  status?: string
   createdAt: string
   items: OrderItem[]
 }
@@ -26,11 +31,13 @@ interface OrdersPage {
 
 export default function AdminOrders() {
   const { id } = useParams()
+  const toast = useToast()
   const [listData, setListData] = useState<OrdersPage | null>(null)
   const [orderDetail, setOrderDetail] = useState<Order | null>(null)
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [statusUpdating, setStatusUpdating] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -77,6 +84,35 @@ export default function AdminOrders() {
               <p className="text-sm text-mosaik-black dark:text-white"><span className="text-mosaik-gray dark:text-gray-400">Email:</span> {orderDetail.guestEmail}</p>
               <p className="text-sm text-mosaik-black dark:text-white"><span className="text-mosaik-gray dark:text-gray-400">Total:</span> ${orderDetail.totalPrice.toFixed(2)}</p>
               <p className="text-sm text-mosaik-black dark:text-white"><span className="text-mosaik-gray dark:text-gray-400">Date:</span> {new Date(orderDetail.createdAt).toLocaleString()}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-mosaik-gray dark:text-gray-400">Status:</span>
+                <select
+                  value={orderDetail.status ?? 'PENDING'}
+                  onChange={async (e) => {
+                    const newStatus = e.target.value as (typeof ORDER_STATUSES)[number]
+                    if (!ORDER_STATUSES.includes(newStatus)) return
+                    setStatusUpdating(true)
+                    try {
+                      const updated = await adminFetch<Order>(`/orders/${orderDetail.id}/status`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: newStatus }),
+                      })
+                      setOrderDetail(updated)
+                      toast.success('Status updated')
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : 'Update failed')
+                    } finally {
+                      setStatusUpdating(false)
+                    }
+                  }}
+                  disabled={statusUpdating}
+                  className="rounded-none py-1.5 px-3 border border-mosaik-gray/50 dark:border-mosaik-dark-border bg-transparent dark:bg-mosaik-dark-bg text-mosaik-black dark:text-white text-sm disabled:opacity-50"
+                >
+                  {ORDER_STATUSES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <h2 className="text-sm font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-4">Items</h2>
             <div className="border border-mosaik-gray/20 dark:border-mosaik-dark-border overflow-x-auto">
@@ -129,10 +165,11 @@ export default function AdminOrders() {
         <>
           <div className="border border-mosaik-gray/20 dark:border-mosaik-dark-border overflow-x-auto">
             <table className="w-full text-sm min-w-[500px]">
-              <thead>
+                <thead>
                 <tr className="border-b border-mosaik-gray/20 dark:border-mosaik-dark-border bg-mosaik-gray-soft dark:bg-mosaik-dark-card">
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">ID</th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Email</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Status</th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Total</th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white">Date</th>
                   <th className="text-left py-3 px-4 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white"></th>
@@ -143,6 +180,11 @@ export default function AdminOrders() {
                   <tr key={o.id} className="border-b border-mosaik-gray/10 dark:border-mosaik-dark-border last:border-0">
                     <td className="py-3 px-4 text-mosaik-black dark:text-white">{o.id}</td>
                     <td className="py-3 px-4 text-mosaik-black dark:text-white">{o.guestEmail}</td>
+                    <td className="py-3 px-4">
+                      <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-none bg-mosaik-gray-soft dark:bg-mosaik-dark-card text-mosaik-black dark:text-white border border-mosaik-gray/30 dark:border-mosaik-dark-border">
+                        {o.status ?? 'PENDING'}
+                      </span>
+                    </td>
                     <td className="py-3 px-4 text-mosaik-black dark:text-white">${o.totalPrice.toFixed(2)}</td>
                     <td className="py-3 px-4 text-mosaik-gray dark:text-gray-400">
                       {new Date(o.createdAt).toLocaleDateString()}

@@ -1,6 +1,7 @@
 package com.clothingstore.repository;
 
 import com.clothingstore.entity.Order;
+import com.clothingstore.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,6 +18,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     List<Order> findByGuestEmailIgnoreCaseOrderByCreatedAtDesc(String email);
+
+    List<Order> findByGuestEmailIgnoreCaseAndStatusNotOrderByCreatedAtDesc(String email, OrderStatus status);
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 

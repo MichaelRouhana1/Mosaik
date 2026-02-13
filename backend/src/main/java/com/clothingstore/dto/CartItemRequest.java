@@ -14,4 +14,6 @@ public class CartItemRequest {
     private int quantity = 1;
 
     private String size;
+
+    private String sku;
 }
