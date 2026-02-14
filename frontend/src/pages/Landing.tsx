@@ -101,7 +101,7 @@ export default function Landing() {
             aria-label={videoMuted ? 'Unmute video' : 'Mute video'}
           >
             <video
-              src="/ad.mp4"
+              src="/images/copy_1FA36497-0DD6-4C57-B22C-B21E1C628908.MOV"
               autoPlay
               loop
               muted={videoMuted}

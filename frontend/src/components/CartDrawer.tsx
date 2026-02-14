@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 
 interface CartDrawerProps {
@@ -119,6 +119,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {items.length > 0 && (
           <div className="p-6 border-t border-gray-200 dark:border-mosaik-dark-border bg-gray-50 dark:bg-mosaik-dark-bg">
+            <Link
+              to="/cart"
+              onClick={onClose}
+              className="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
+            >
+              View full cart →
+            </Link>
             <div className="flex items-center justify-between mb-4">
               <span className="text-lg font-semibold text-gray-900 dark:text-white">Total</span>
               <span className="text-xl font-bold text-gray-900 dark:text-white">

@@ -60,6 +60,13 @@ export default function AdminLayout() {
           >
             Orders
           </Link>
+          <Link
+            to="/admin/customers"
+            onClick={closeSidebar}
+            className="block px-4 py-3 text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white hover:bg-mosaik-gray-soft dark:hover:bg-mosaik-dark-bg"
+          >
+            Customers
+          </Link>
         </nav>
         <div className="p-4 border-t border-mosaik-gray/20 dark:border-mosaik-dark-border space-y-1">
           <button

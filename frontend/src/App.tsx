@@ -8,6 +8,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import LandingNavbar from './components/LandingNavbar'
 import ProductList from './pages/ProductList'
 import ProductDetail from './pages/ProductDetail'
+import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
 import CheckoutCancel from './pages/CheckoutCancel'
@@ -21,6 +22,7 @@ import AdminLayout from './admin/AdminLayout'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminProducts from './admin/AdminProducts'
 import AdminOrders from './admin/AdminOrders'
+import AdminCustomers from './admin/AdminCustomers'
 import ProtectedRoute from './admin/ProtectedRoute'
 
 function App() {
@@ -41,6 +43,8 @@ function App() {
               <Route path="products" element={<AdminProducts />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="orders/:id" element={<AdminOrders />} />
+              <Route path="customers" element={<AdminCustomers />} />
+              <Route path="customers/:id" element={<AdminCustomers />} />
             </Route>
             <Route path="/" element={
             <>
@@ -80,6 +84,14 @@ function App() {
             <>
               <LandingNavbar onCartClick={() => setIsCartOpen(true)} />
               <About />
+            </>
+          } />
+          <Route path="/cart" element={
+            <>
+              <LandingNavbar onCartClick={() => setIsCartOpen(true)} />
+              <div className="pt-14">
+                <Cart />
+              </div>
             </>
           } />
           <Route path="/checkout" element={

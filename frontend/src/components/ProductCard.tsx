@@ -10,9 +10,10 @@ const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL']
 
 interface ProductCardProps {
   product: Product
+  compact?: boolean
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, compact }: ProductCardProps) {
   const { addToCart } = useCart()
   const toast = useToast()
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
@@ -64,9 +65,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const colorLabel = product.color ?? '—'
 
   return (
-    <article className="group overflow-hidden">
+    <article className={`group overflow-hidden ${compact ? 'text-[0.85em]' : ''}`}>
       <Link to={`/shop/${product.id}`} className="block">
-        <div className="relative aspect-[2/3] overflow-hidden">
+        <div className={`relative aspect-[2/3] overflow-hidden ${compact ? 'rounded-none' : ''}`}>
           <img
             src={currentSrc}
             alt={product.name}
@@ -88,20 +89,20 @@ export default function ProductCard({ product }: ProductCardProps) {
               <button
                 type="button"
                 onClick={goToPrevImage}
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/80 dark:bg-black/60 text-mosaik-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white dark:hover:bg-black/80"
+                className={`absolute left-0 top-1/2 -translate-y-1/2 flex items-center justify-center bg-white/80 dark:bg-black/60 text-mosaik-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white dark:hover:bg-black/80 ${compact ? 'w-8 h-8' : 'w-10 h-10'}`}
                 aria-label="Previous image"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={compact ? 'w-4 h-4' : 'w-5 h-5'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <button
                 type="button"
                 onClick={goToNextImage}
-                className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/80 dark:bg-black/60 text-mosaik-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white dark:hover:bg-black/80"
+                className={`absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-center bg-white/80 dark:bg-black/60 text-mosaik-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white dark:hover:bg-black/80 ${compact ? 'w-8 h-8' : 'w-10 h-10'}`}
                 aria-label="Next image"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={compact ? 'w-4 h-4' : 'w-5 h-5'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
@@ -110,7 +111,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           {/* Size selection overlay - visible on hover (hidden when out of stock) */}
           {!isOutOfStock && (
-            <div className="absolute inset-x-0 bottom-0 bg-white/95 dark:bg-mosaik-dark-bg/95 dark:border-t dark:border-mosaik-dark-border p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className={`absolute inset-x-0 bottom-0 bg-white/95 dark:bg-mosaik-dark-bg/95 dark:border-t dark:border-mosaik-dark-border opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${compact ? 'p-2' : 'p-4'}`}>
               <p className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-2">
                 Select size
               </p>
@@ -137,8 +138,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
         </div>
-        <div className="mt-3">
-          <h3 className="text-sm font-light text-mosaik-black dark:text-white truncate">
+        <div className={compact ? 'mt-2' : 'mt-3'}>
+          <h3 className={`font-light text-mosaik-black dark:text-white truncate ${compact ? 'text-xs' : 'text-sm'}`}>
             {product.name}
           </h3>
           <p className="text-xs font-light text-mosaik-gray dark:text-gray-400 mt-0.5">
