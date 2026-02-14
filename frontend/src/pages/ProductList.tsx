@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import CategoryHeader from '../components/CategoryHeader'
@@ -39,14 +39,31 @@ export default function ProductList() {
   const [filterPanelOpen, setFilterPanelOpen] = useState(false)
   const [sort, setSort] = useState<SortOption>('recommended')
   const [filters, setFilters] = useState<FilterState>({
-    fit: [],
-    fabric: [],
+    priceMin: 0,
+    priceMax: 500,
+    size: [],
     color: [],
-    length: [],
   })
   const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE)
 
   const apiCategory = categorySlug ? CAT_SLUG_TO_CATEGORY[categorySlug] ?? categorySlug : null
+
+  const priceBounds = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 500 }
+    const prices = products.map((p) => p.price)
+    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) }
+  }, [products])
+
+  const priceInitialized = useRef(false)
+  useEffect(() => {
+    priceInitialized.current = false
+  }, [apiCategory])
+  useEffect(() => {
+    if (products.length > 0 && priceBounds.max > 0 && !priceInitialized.current) {
+      priceInitialized.current = true
+      setFilters((prev) => ({ ...prev, priceMin: priceBounds.min, priceMax: priceBounds.max }))
+    }
+  }, [products.length, priceBounds.min, priceBounds.max])
 
   useEffect(() => {
     const url = apiCategory ? `${API_URL}?cat=${encodeURIComponent(apiCategory)}` : API_URL
@@ -69,11 +86,22 @@ export default function ProductList() {
   const filteredAndSorted = useMemo(() => {
     let list = [...products]
 
+    if (filters.priceMin != null && filters.priceMin > 0) {
+      list = list.filter((p) => p.price >= filters.priceMin)
+    }
+    if (filters.priceMax != null && filters.priceMax < Infinity) {
+      list = list.filter((p) => p.price <= filters.priceMax)
+    }
     if (filters.color.length > 0) {
       list = list.filter((p) => p.color && filters.color.includes(p.color))
     }
-    if (filters.fit.length > 0 || filters.fabric.length > 0 || filters.length.length > 0) {
-      // No Fit/Fabric/Length in Product yet - skip for now
+    if (filters.size.length > 0) {
+      list = list.filter((p) => {
+        const variantSizes = (p.variants ?? []).filter((v) => v.stock > 0).map((v) => v.size)
+        const sizesStr = (p.sizes ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+        const availableSizes = variantSizes.length > 0 ? variantSizes : sizesStr
+        return filters.size.some((s) => availableSizes.includes(s))
+      })
     }
 
     if (sort === 'recommended') {
@@ -82,6 +110,8 @@ export default function ProductList() {
       list.sort((a, b) => b.id - a.id)
     } else if (sort === 'price-low') {
       list.sort((a, b) => a.price - b.price)
+    } else if (sort === 'price-high') {
+      list.sort((a, b) => b.price - a.price)
     }
 
     return list
@@ -145,6 +175,7 @@ export default function ProductList() {
         onClose={() => setFilterPanelOpen(false)}
         filters={filters}
         onFiltersChange={setFilters}
+        priceBounds={priceBounds}
       />
 
       <main className="w-full px-6 py-8">

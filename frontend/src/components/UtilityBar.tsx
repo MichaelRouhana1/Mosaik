@@ -1,4 +1,4 @@
-export type SortOption = 'recommended' | 'newest' | 'price-low'
+export type SortOption = 'recommended' | 'newest' | 'price-low' | 'price-high'
 
 interface UtilityBarProps {
   onFiltersClick: () => void
@@ -9,12 +9,13 @@ interface UtilityBarProps {
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'recommended', label: 'Recommended' },
   { value: 'newest', label: 'Newest' },
-  { value: 'price-low', label: 'Price Low/High' },
+  { value: 'price-low', label: 'Price: Low to High' },
+  { value: 'price-high', label: 'Price: High to Low' },
 ]
 
 export default function UtilityBar({ onFiltersClick, sort, onSortChange }: UtilityBarProps) {
   return (
-    <div className="h-14 flex items-center justify-between px-6 border-b border-mosaik-gray/20 dark:border-mosaik-dark-border bg-white dark:bg-mosaik-dark-bg">
+    <div className="sticky top-14 z-10 h-14 flex items-center justify-between px-6 border-b border-mosaik-gray/20 dark:border-mosaik-dark-border bg-white dark:bg-mosaik-dark-bg">
       <button
         type="button"
         onClick={onFiltersClick}

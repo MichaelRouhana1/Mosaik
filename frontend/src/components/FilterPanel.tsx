@@ -1,20 +1,19 @@
 export interface FilterState {
-  fit: string[]
-  fabric: string[]
+  priceMin: number
+  priceMax: number
+  size: string[]
   color: string[]
-  length: string[]
 }
 
-const FIT_OPTIONS = ['Slim', 'Regular', 'Relaxed', 'Oversized']
-const FABRIC_OPTIONS = ['Cotton', 'Wool', 'Denim', 'Leather', 'Fleece']
-const COLOR_OPTIONS = ['Black', 'White', 'Indigo', 'Charcoal', 'Camel', 'Navy', 'Grey']
-const LENGTH_OPTIONS = ['Cropped', 'Standard', 'Long']
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL']
+const COLOR_OPTIONS = ['Black', 'White', 'Indigo', 'Charcoal', 'Camel', 'Navy', 'Grey', 'Blue', 'Light Blue']
 
 interface FilterPanelProps {
   isOpen: boolean
   onClose: () => void
   filters: FilterState
   onFiltersChange: (filters: FilterState) => void
+  priceBounds: { min: number; max: number }
 }
 
 function FilterSection({
@@ -41,7 +40,7 @@ function FilterSection({
             onClick={() => onToggle(opt)}
             className={`rounded-none px-4 py-2 text-xs font-normal uppercase tracking-widest transition-colors ${
               selected.includes(opt)
-                ? 'bg-mosaik-black text-white'
+                ? 'bg-mosaik-black text-white dark:bg-white dark:text-mosaik-black'
                 : 'bg-mosaik-gray-soft dark:bg-mosaik-dark-border text-mosaik-black dark:text-white hover:bg-mosaik-gray/30 dark:hover:bg-mosaik-dark-border/80'
             }`}
           >
@@ -53,18 +52,80 @@ function FilterSection({
   )
 }
 
+function PriceRangeSection({
+  bounds,
+  valueMin,
+  valueMax,
+  onChange,
+}: {
+  bounds: { min: number; max: number }
+  valueMin: number
+  valueMax: number
+  onChange: (min: number, max: number) => void
+}) {
+  const range = bounds.max - bounds.min || 1
+  const step = Math.max(0.01, range / 100)
+  const clampedMin = Math.max(bounds.min, Math.min(bounds.max, valueMin))
+  const clampedMax = Math.max(bounds.min, Math.min(bounds.max, valueMax))
+
+  return (
+    <div className="mb-8">
+      <h3 className="text-xs font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-4">
+        Price Range
+      </h3>
+      <div className="space-y-6">
+        <div>
+          <label className="text-xs text-mosaik-gray dark:text-gray-400 block mb-2">Min: ${clampedMin.toFixed(0)}</label>
+          <input
+            type="range"
+            min={bounds.min}
+            max={bounds.max}
+            step={step}
+            value={clampedMin}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value)
+              onChange(v, Math.max(v, clampedMax))
+            }}
+            className="w-full h-1.5 bg-mosaik-gray/30 dark:bg-mosaik-dark-border appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-mosaik-black [&::-webkit-slider-thumb]:dark:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:-mt-1.5"
+          />
+        </div>
+        <div>
+          <label className="text-xs text-mosaik-gray dark:text-gray-400 block mb-2">Max: ${clampedMax.toFixed(0)}</label>
+          <input
+            type="range"
+            min={bounds.min}
+            max={bounds.max}
+            step={step}
+            value={clampedMax}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value)
+              onChange(Math.min(v, clampedMin), v)
+            }}
+            className="w-full h-1.5 bg-mosaik-gray/30 dark:bg-mosaik-dark-border appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-mosaik-black [&::-webkit-slider-thumb]:dark:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:-mt-1.5"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function FilterPanel({
   isOpen,
   onClose,
   filters,
   onFiltersChange,
+  priceBounds,
 }: FilterPanelProps) {
-  const toggleFilter = (key: keyof FilterState) => (value: string) => {
+  const toggleFilter = (key: 'size' | 'color') => (value: string) => {
     const current = filters[key]
     const next = current.includes(value)
       ? current.filter((v) => v !== value)
       : [...current, value]
     onFiltersChange({ ...filters, [key]: next })
+  }
+
+  const setPriceRange = (priceMin: number, priceMax: number) => {
+    onFiltersChange({ ...filters, priceMin, priceMax })
   }
 
   return (
@@ -95,29 +156,23 @@ export default function FilterPanel({
           <h2 className="text-sm font-medium uppercase tracking-widest text-mosaik-black dark:text-white mb-8">
             Filters
           </h2>
-          <FilterSection
-            title="Fit"
-            options={FIT_OPTIONS}
-            selected={filters.fit}
-            onToggle={toggleFilter('fit')}
+          <PriceRangeSection
+            bounds={priceBounds}
+            valueMin={filters.priceMin}
+            valueMax={filters.priceMax}
+            onChange={setPriceRange}
           />
           <FilterSection
-            title="Fabric"
-            options={FABRIC_OPTIONS}
-            selected={filters.fabric}
-            onToggle={toggleFilter('fabric')}
+            title="Size"
+            options={SIZE_OPTIONS}
+            selected={filters.size}
+            onToggle={toggleFilter('size')}
           />
           <FilterSection
             title="Color"
             options={COLOR_OPTIONS}
             selected={filters.color}
             onToggle={toggleFilter('color')}
-          />
-          <FilterSection
-            title="Length"
-            options={LENGTH_OPTIONS}
-            selected={filters.length}
-            onToggle={toggleFilter('length')}
           />
         </div>
       </aside>
